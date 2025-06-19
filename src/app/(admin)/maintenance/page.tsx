@@ -1,287 +1,346 @@
+"use client"
+
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { mockCamions } from '@/lib/db/mock-data'
-import { getStatusColor, formatDate, formatCurrency } from '@/lib/utils'
-import { Plus, Wrench, Clock, Calendar, Settings, Hammer } from 'lucide-react'
+import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { Wrench, AlertTriangle, Calendar, Clock, Plus, Filter, Search } from 'lucide-react'
 
-// Données mockées pour les ordres de travail
-const mockWorkOrders = [
+interface MaintenanceIntervention {
+  id: string
+  vehicleId: string
+  vehiclePlate: string
+  type: 'preventive' | 'corrective' | 'emergency'
+  title: string
+  description: string
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled'
+  scheduledDate: string
+  completedDate?: string
+  technician: string
+  estimatedCost: number
+  actualCost?: number
+  partsCost: number
+  laborCost: number
+  mileage: number
+}
+
+const mockInterventions: MaintenanceIntervention[] = [
   {
-    id: 'WO-001',
-    camionId: '1',
-    type: 'PREVENTIVE',
-    statut: 'PLANIFIEE',
-    description: 'Révision 10 000 km - Vidange, filtres, freins',
-    technicienId: 'tech-1',
-    dateCreation: new Date('2024-03-10'),
-    dateDebut: new Date('2024-03-20'),
-    dateFin: null,
-    pieces: [
-      { nom: 'Huile moteur', reference: 'OIL-001', quantite: 15, prixUnitaire: 8.50 },
-      { nom: 'Filtre à huile', reference: 'FLT-001', quantite: 1, prixUnitaire: 25.00 },
-      { nom: 'Plaquettes de frein', reference: 'BRK-001', quantite: 4, prixUnitaire: 85.00 }
-    ],
-    cout: 467.50,
-    validee: false
+    id: '1',
+    vehicleId: 'v1',
+    vehiclePlate: 'TC-001-FR',
+    type: 'preventive',
+    title: 'Vidange moteur + filtres',
+    description: 'Vidange huile moteur, remplacement filtres à huile et à air',
+    priority: 'medium',
+    status: 'completed',
+    scheduledDate: '2024-03-10',
+    completedDate: '2024-03-10',
+    technician: 'Lucas Moreau',
+    estimatedCost: 450,
+    actualCost: 485,
+    partsCost: 120,
+    laborCost: 365,
+    mileage: 85000
   },
   {
-    id: 'WO-002',
-    camionId: '3',
-    type: 'CURATIVE',
-    statut: 'EN_COURS',
-    description: 'Réparation système hydraulique - Fuite détectée',
-    technicienId: 'tech-2',
-    dateCreation: new Date('2024-03-15'),
-    dateDebut: new Date('2024-03-16'),
-    dateFin: null,
-    pieces: [
-      { nom: 'Joint hydraulique', reference: 'HYD-001', quantite: 2, prixUnitaire: 45.00 },
-      { nom: 'Fluide hydraulique', reference: 'HYD-002', quantite: 5, prixUnitaire: 12.00 }
-    ],
-    cout: 150.00,
-    validee: false
+    id: '2',
+    vehicleId: 'v2',
+    vehiclePlate: 'TC-002-FR',
+    type: 'corrective',
+    title: 'Réparation système freinage',
+    description: 'Remplacement plaquettes et disques de frein avant',
+    priority: 'high',
+    status: 'in_progress',
+    scheduledDate: '2024-03-15',
+    technician: 'Pierre Duval',
+    estimatedCost: 1200,
+    partsCost: 750,
+    laborCost: 450,
+    mileage: 142000
   },
   {
-    id: 'WO-003',
-    camionId: '2',
-    type: 'PREVENTIVE',
-    statut: 'TERMINEE',
-    description: 'Contrôle technique annuel',
-    technicienId: 'tech-1',
-    dateCreation: new Date('2024-03-01'),
-    dateDebut: new Date('2024-03-05'),
-    dateFin: new Date('2024-03-05'),
-    pieces: [],
-    cout: 120.00,
-    validee: true
+    id: '3',
+    vehicleId: 'v3',
+    vehiclePlate: 'TC-003-FR',
+    type: 'emergency',
+    title: 'Panne moteur - diagnostic',
+    description: 'Diagnostic complet suite à perte de puissance',
+    priority: 'critical',
+    status: 'planned',
+    scheduledDate: '2024-03-18',
+    technician: 'Antoine Bernard',
+    estimatedCost: 800,
+    partsCost: 0,
+    laborCost: 800,
+    mileage: 95000
   }
 ]
 
-const mockTechniciens = [
-  { id: 'tech-1', nom: 'Michel', prenom: 'Laurent', specialite: 'Mécanique générale' },
-  { id: 'tech-2', nom: 'Dubois', prenom: 'Sophie', specialite: 'Hydraulique' }
-]
-
 export default function MaintenancePage() {
-  const workOrdersEnCours = mockWorkOrders.filter(wo => wo.statut === 'EN_COURS').length
-  const workOrdersPlanifiees = mockWorkOrders.filter(wo => wo.statut === 'PLANIFIEE').length
-  const coutTotal = mockWorkOrders.reduce((total, wo) => total + wo.cout, 0)
-  const mtbf = 2450 // Mean Time Between Failures en heures
-  const mttr = 4.2 // Mean Time To Repair en heures
+  const { hasPermission } = useRolePermissions()
+  const [interventions] = useState<MaintenanceIntervention[]>(mockInterventions)
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredInterventions = interventions.filter(intervention => {
+    const statusMatch = statusFilter === 'all' || intervention.status === statusFilter
+    const typeMatch = typeFilter === 'all' || intervention.type === typeFilter
+    const searchMatch = intervention.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       intervention.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       intervention.technician.toLowerCase().includes(searchTerm.toLowerCase())
+    return statusMatch && typeMatch && searchMatch
+  })
+
+  const getStatusBadge = (status: MaintenanceIntervention['status']) => {
+    const statusConfig = {
+      planned: { label: 'Planifiée', className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+      in_progress: { label: 'En cours', className: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
+      completed: { label: 'Terminée', className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
+      cancelled: { label: 'Annulée', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+    }
+    
+    const config = statusConfig[status]
+    return <Badge className={config.className}>{config.label}</Badge>
+  }
+
+  const getPriorityBadge = (priority: MaintenanceIntervention['priority']) => {
+    const priorityConfig = {
+      low: { label: 'Basse', className: 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300' },
+      medium: { label: 'Moyenne', className: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' },
+      high: { label: 'Haute', className: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
+      critical: { label: 'Critique', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+    }
+    
+    const config = priorityConfig[priority]
+    return <Badge variant="outline" className={config.className}>{config.label}</Badge>
+  }
+
+  const getTypeBadge = (type: MaintenanceIntervention['type']) => {
+    const typeConfig = {
+      preventive: { label: 'Préventive', className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
+      corrective: { label: 'Corrective', className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+      emergency: { label: 'Urgence', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+    }
+    
+    const config = typeConfig[type]
+    return <Badge className={config.className}>{config.label}</Badge>
+  }
+
+  const maintenanceStats = {
+    total: interventions.length,
+    inProgress: interventions.filter(i => i.status === 'in_progress').length,
+    planned: interventions.filter(i => i.status === 'planned').length,
+    completed: interventions.filter(i => i.status === 'completed').length,
+    critical: interventions.filter(i => i.priority === 'critical').length,
+    totalCost: interventions.reduce((sum, i) => sum + (i.actualCost || i.estimatedCost), 0)
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="border-b border-border pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Maintenance</h1>
-              <p className="text-muted-foreground mt-2">
-                Gestion de la maintenance préventive et curative des camions-citernes
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                <span>{workOrdersEnCours} ordres en cours</span>
-              </div>
-              <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4" />
-                Nouvel Ordre de Travail
-              </Button>
-            </div>
-          </div>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Interventions de Maintenance</h1>
+          <p className="text-muted-foreground">
+            Gérez toutes les interventions de maintenance de votre flotte
+          </p>
         </div>
+        <ProtectedComponent resource="maintenance" action="create">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle intervention
+          </Button>
+        </ProtectedComponent>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                  <Wrench className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Ordres en cours</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">{workOrdersEnCours}</span>
-                  </div>
-                </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Wrench className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{maintenanceStats.total}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">{workOrdersPlanifiees} planifiés</p>
-          </div>
-
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-                  <Clock className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">MTBF</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">{mtbf}</span>
-                    <span className="text-sm text-muted-foreground">h</span>
-                  </div>
-                </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-orange-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">En cours</p>
+                <p className="text-2xl font-bold text-foreground">{maintenanceStats.inProgress}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">Temps moyen entre pannes</p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                  <Hammer className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">MTTR</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">{mttr}</span>
-                    <span className="text-sm text-muted-foreground">h</span>
-                  </div>
-                </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Calendar className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Planifiées</p>
+                <p className="text-2xl font-bold text-foreground">{maintenanceStats.planned}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">Temps moyen de réparation</p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                  <Calendar className="h-5 w-5 text-purple-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Coût total</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">{formatCurrency(coutTotal)}</span>
-                  </div>
-                </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Critiques</p>
+                <p className="text-2xl font-bold text-foreground">{maintenanceStats.critical}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
-          </div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <span className="text-purple-600 font-bold">€</span>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Coût total</p>
+                <p className="text-2xl font-bold text-foreground">{maintenanceStats.totalCost.toLocaleString()} €</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Rechercher une intervention..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground"
+          />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+        >
+          <option value="all">Tous les statuts</option>
+          <option value="planned">Planifiées</option>
+          <option value="in_progress">En cours</option>
+          <option value="completed">Terminées</option>
+          <option value="cancelled">Annulées</option>
+        </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+        >
+          <option value="all">Tous les types</option>
+          <option value="preventive">Préventive</option>
+          <option value="corrective">Corrective</option>
+          <option value="emergency">Urgence</option>
+        </select>
+      </div>
 
-        {/* Work Orders List */}
-        <div className="card-hover rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Ordres de travail
-            </h2>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">Filtrer</Button>
-              <Button variant="outline" size="sm">Exporter</Button>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            {mockWorkOrders.map((workOrder) => {
-              const camion = mockCamions.find(c => c.id === workOrder.camionId)
-              const technicien = mockTechniciens.find(t => t.id === workOrder.technicienId)
-              
-              return (
-                <div key={workOrder.id} className="gradient-border">
-                  <div className="p-6 bg-card rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <Wrench className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg text-card-foreground">{workOrder.id}</h3>
-                            <p className="text-muted-foreground">{workOrder.description}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Badge variant={workOrder.type === 'PREVENTIVE' ? 'default' : 'destructive'}>
-                              {workOrder.type === 'PREVENTIVE' ? 'Préventive' : 'Curative'}
-                            </Badge>
-                            <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(workOrder.statut)}`}>
-                              {workOrder.statut.replace('_', ' ')}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-4">
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Camion</span>
-                            <p className="font-medium text-card-foreground">{camion?.immatriculation}</p>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Technicien</span>
-                            <p className="font-medium text-card-foreground">{technicien?.prenom} {technicien?.nom}</p>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Coût estimé</span>
-                            <p className="font-medium text-card-foreground">{formatCurrency(workOrder.cout)}</p>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Échéance</span>
-                            <p className="font-medium text-card-foreground">
-                              {workOrder.dateDebut ? formatDate(workOrder.dateDebut) : 'À planifier'}
-                            </p>
-                          </div>
-                        </div>
+      {/* Interventions List */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredInterventions.map((intervention) => (
+          <Card key={intervention.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-start justify-between pb-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <CardTitle className="text-lg">{intervention.title}</CardTitle>
+                  {getTypeBadge(intervention.type)}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {intervention.vehiclePlate} • {intervention.mileage.toLocaleString()} km
+                </p>
+              </div>
+              <div className="flex flex-col gap-1">
+                {getStatusBadge(intervention.status)}
+                {getPriorityBadge(intervention.priority)}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Description */}
+              <p className="text-sm text-muted-foreground">{intervention.description}</p>
 
-                        {/* Pièces */}
-                        {workOrder.pieces.length > 0 && (
-                          <div className="bg-muted/20 p-4 rounded-lg">
-                            <h4 className="text-sm font-medium text-card-foreground mb-3 flex items-center gap-2">
-                              <Hammer className="h-4 w-4" />
-                              Pièces nécessaires
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                              {workOrder.pieces.map((piece, index) => (
-                                <div key={index} className="bg-card p-2 rounded border border-border">
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <p className="text-xs font-medium text-card-foreground">{piece.nom}</p>
-                                      <p className="text-xs text-muted-foreground">{piece.reference}</p>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="text-xs font-medium text-card-foreground">
-                                        {piece.quantite} × {formatCurrency(piece.prixUnitaire)}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        = {formatCurrency(piece.quantite * piece.prixUnitaire)}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex flex-col gap-2 ml-6">
-                        <Button variant="outline" size="sm" className="input-styled">
-                          Détails
-                        </Button>
-                        {workOrder.statut === 'PLANIFIEE' && (
-                          <Button size="sm" className="bg-primary hover:bg-primary/90">
-                            Démarrer
-                          </Button>
-                        )}
-                        {workOrder.statut === 'EN_COURS' && (
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                            Terminer
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+              {/* Schedule and Technician */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Date prévue</p>
+                  <p className="font-medium">{new Date(intervention.scheduledDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Technicien</p>
+                  <p className="font-medium">{intervention.technician}</p>
+                </div>
+              </div>
+
+              {/* Costs */}
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Pièces</p>
+                    <p className="font-medium">{intervention.partsCost} €</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Main d&apos;œuvre</p>
+                    <p className="font-medium">{intervention.laborCost} €</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Total</p>
+                    <p className="font-semibold text-lg">
+                      {(intervention.actualCost || intervention.estimatedCost)} €
+                    </p>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </div>
+              </div>
+
+              {/* Completion Date */}
+              {intervention.completedDate && (
+                <div className="text-sm">
+                  <p className="text-muted-foreground">Terminée le</p>
+                  <p className="font-medium">{new Date(intervention.completedDate).toLocaleDateString()}</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <ProtectedComponent resource="maintenance" action="update">
+                <div className="flex gap-2 pt-3 border-t">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Voir détails
+                  </Button>
+                  {intervention.status === 'planned' && (
+                    <Button size="sm" className="flex-1">
+                      Démarrer
+                    </Button>
+                  )}
+                  {intervention.status === 'in_progress' && (
+                    <Button size="sm" className="flex-1">
+                      Terminer
+                    </Button>
+                  )}
+                </div>
+              </ProtectedComponent>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   )

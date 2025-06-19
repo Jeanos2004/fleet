@@ -1,204 +1,273 @@
+"use client"
+
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { mockMissions, mockCamions, mockChauffeurs } from '@/lib/db/mock-data'
-import { getStatusColor, formatDate, formatCurrency } from '@/lib/utils'
-import { Plus, MapPin, Clock, Truck, Calendar } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { MapPin, Clock, Truck, User, Plus, Filter, Search } from 'lucide-react'
+
+interface Mission {
+  id: string
+  title: string
+  vehicleId: string
+  vehiclePlate: string
+  driverId: string
+  driverName: string
+  origin: string
+  destination: string
+  startDate: string
+  endDate: string
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled'
+  distance: number
+  cargo: string
+  priority: 'low' | 'medium' | 'high'
+}
+
+const mockMissions: Mission[] = [
+  {
+    id: '1',
+    title: 'Livraison Paris - Lyon',
+    vehicleId: 'v1',
+    vehiclePlate: 'TC-001-FR',
+    driverId: 'd1',
+    driverName: 'Pierre Martin',
+    origin: 'Paris, 75001',
+    destination: 'Lyon, 69001',
+    startDate: '2024-03-16T08:00:00',
+    endDate: '2024-03-16T18:00:00',
+    status: 'in_progress',
+    distance: 465,
+    cargo: 'Marchandises diverses (12T)',
+    priority: 'high'
+  },
+  {
+    id: '2',
+    title: 'Transport Marseille - Nice',
+    vehicleId: 'v2',
+    vehiclePlate: 'TC-002-FR',
+    driverId: 'd2',
+    driverName: 'Marie Dubois',
+    origin: 'Marseille, 13001',
+    destination: 'Nice, 06000',
+    startDate: '2024-03-17T06:00:00',
+    endDate: '2024-03-17T12:00:00',
+    status: 'planned',
+    distance: 205,
+    cargo: 'Équipements industriels (8T)',
+    priority: 'medium'
+  },
+  {
+    id: '3',
+    title: 'Retour à vide Toulouse',
+    vehicleId: 'v3',
+    vehiclePlate: 'TC-003-FR',
+    driverId: 'd3',
+    driverName: 'Jean Dupont',
+    origin: 'Toulouse, 31000',
+    destination: 'Paris, 75001',
+    startDate: '2024-03-15T14:00:00',
+    endDate: '2024-03-15T22:00:00',
+    status: 'completed',
+    distance: 678,
+    cargo: 'Retour à vide',
+    priority: 'low'
+  }
+]
 
 export default function MissionsPage() {
+  const { hasPermission } = useRolePermissions()
+  const [missions] = useState<Mission[]>(mockMissions)
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredMissions = missions.filter(mission => {
+    const statusMatch = statusFilter === 'all' || mission.status === statusFilter
+    const searchMatch = mission.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       mission.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       mission.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase())
+    return statusMatch && searchMatch
+  })
+
+  const getStatusBadge = (status: Mission['status']) => {
+    const statusConfig = {
+      planned: { label: 'Planifiée', className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+      in_progress: { label: 'En cours', className: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
+      completed: { label: 'Terminée', className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
+      cancelled: { label: 'Annulée', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+    }
+    
+    const config = statusConfig[status]
+    return <Badge className={config.className}>{config.label}</Badge>
+  }
+
+  const getPriorityBadge = (priority: Mission['priority']) => {
+    const priorityConfig = {
+      low: { label: 'Basse', className: 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300' },
+      medium: { label: 'Moyenne', className: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' },
+      high: { label: 'Haute', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+    }
+    
+    const config = priorityConfig[priority]
+    return <Badge variant="outline" className={config.className}>{config.label}</Badge>
+  }
+
+  const missionStats = {
+    total: missions.length,
+    inProgress: missions.filter(m => m.status === 'in_progress').length,
+    planned: missions.filter(m => m.status === 'planned').length,
+    completed: missions.filter(m => m.status === 'completed').length
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="border-b border-border pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Missions</h1>
-              <p className="text-muted-foreground mt-2">
-                Planification et suivi des livraisons de carburant
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span>8 missions actives</span>
-              </div>
-              <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4" />
-                Nouvelle Mission
-              </Button>
-            </div>
-          </div>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Toutes les Missions</h1>
+          <p className="text-muted-foreground">
+            Gérez et suivez toutes vos missions de transport
+          </p>
         </div>
+        <ProtectedComponent resource="missions" action="create">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle mission
+          </Button>
+        </ProtectedComponent>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                  <MapPin className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Missions actives</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">8</span>
-                  </div>
-                </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Total missions</p>
+                <p className="text-2xl font-bold text-foreground">{missionStats.total}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">+2 depuis hier</p>
-          </div>
-
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-                  <Clock className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Terminées aujourd&apos;hui</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">12</span>
-                  </div>
-                </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <MapPin className="h-8 w-8 text-orange-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">En cours</p>
+                <p className="text-2xl font-bold text-foreground">{missionStats.inProgress}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">94% à temps</p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                  <Truck className="h-5 w-5 text-purple-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Distance totale</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">1,247</span>
-                    <span className="text-sm text-muted-foreground">km</span>
-                  </div>
-                </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Truck className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Planifiées</p>
+                <p className="text-2xl font-bold text-foreground">{missionStats.planned}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">Cette semaine</p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="stat-card group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                  <Calendar className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Coût estimé</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-2xl font-bold text-card-foreground">€2,456</span>
-                  </div>
-                </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <User className="h-8 w-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Terminées</p>
+                <p className="text-2xl font-bold text-foreground">{missionStats.completed}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">Missions en cours</p>
-          </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Rechercher une mission..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground"
+          />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+        >
+          <option value="all">Tous les statuts</option>
+          <option value="planned">Planifiées</option>
+          <option value="in_progress">En cours</option>
+          <option value="completed">Terminées</option>
+          <option value="cancelled">Annulées</option>
+        </select>
+      </div>
 
-        {/* Missions List */}
-        <div className="card-hover rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-card-foreground">Missions récentes</h2>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">Filtrer</Button>
-              <Button variant="outline" size="sm">Exporter</Button>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            {mockMissions.map((mission) => {
-              const camion = mockCamions.find(c => c.id === mission.camionId)
-              const chauffeur = mockChauffeurs.find(c => c.id === mission.chauffeurId)
-              
-              return (
-                <div key={mission.id} className="gradient-border">
-                  <div className="p-6 bg-card rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-4">
-                          <div>
-                            <h3 className="font-semibold text-lg text-card-foreground">Mission #{mission.id}</h3>
-                            <p className="text-muted-foreground">
-                              {mission.type === 'UNIQUE' ? 'Livraison unique' : 'Livraison multiple'} - {mission.sites.length} site(s)
-                            </p>
-                          </div>
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(mission.statut)}`}>
-                            {mission.statut.replace('_', ' ')}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-4">
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Camion:</span>
-                            <p className="font-medium text-card-foreground">{camion?.immatriculation}</p>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Chauffeur:</span>
-                            <p className="font-medium text-card-foreground">{chauffeur?.nom} {chauffeur?.prenom}</p>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Distance:</span>
-                            <p className="font-medium text-card-foreground">
-                              {mission.distanceReelle ? 
-                                `${mission.distanceReelle} km` : 
-                                `${mission.distanceEstimee} km estimé`
-                              }
-                            </p>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <span className="text-muted-foreground block mb-1">Coût:</span>
-                            <p className="font-medium text-card-foreground">
-                              {mission.fraisReels ? 
-                                formatCurrency(mission.fraisReels.total) : 
-                                formatCurrency(mission.fraisEstimes.total)
-                              }
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>Début: {formatDate(mission.dateDebut)}</span>
-                          </div>
-                          {mission.dateFin && (
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4" />
-                              <span>Fin: {formatDate(mission.dateFin)}</span>
-                            </div>
-                          )}
-                          {mission.ecartDistance && (
-                            <div className={`flex items-center gap-2 ${mission.ecartDistance > 10 ? 'text-red-500' : 'text-green-500'}`}>
-                              <MapPin className="h-4 w-4" />
-                              <span>Écart: {mission.ecartDistance.toFixed(1)}%</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2 ml-6">
-                        <Button variant="outline" size="sm" className="input-styled">
-                          Détails
-                        </Button>
-                        {mission.statut === 'EN_COURS' && (
-                          <Button size="sm" className="bg-primary hover:bg-primary/90">
-                            Terminer
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+      {/* Missions List */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredMissions.map((mission) => (
+          <Card key={mission.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-start justify-between pb-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <CardTitle className="text-lg">{mission.title}</CardTitle>
+                  {getPriorityBadge(mission.priority)}
                 </div>
-              )
-            })}
-          </div>
-        </div>
+                <p className="text-sm text-muted-foreground">
+                  {mission.vehiclePlate} • {mission.driverName}
+                </p>
+              </div>
+              {getStatusBadge(mission.status)}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Route */}
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                <div className="flex-1 text-sm">
+                  <p className="font-medium">{mission.origin}</p>
+                  <p className="text-muted-foreground">→ {mission.destination}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{mission.distance} km</p>
+                </div>
+              </div>
+
+              {/* Timing */}
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>{new Date(mission.startDate).toLocaleDateString()} - {new Date(mission.endDate).toLocaleDateString()}</span>
+              </div>
+
+              {/* Cargo */}
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm font-medium">Chargement</p>
+                <p className="text-sm text-muted-foreground">{mission.cargo}</p>
+              </div>
+
+              {/* Actions */}
+              <ProtectedComponent resource="missions" action="update">
+                <div className="flex gap-2 pt-3 border-t">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Voir détails
+                  </Button>
+                  {mission.status === 'planned' && (
+                    <Button size="sm" className="flex-1">
+                      Démarrer
+                    </Button>
+                  )}
+                </div>
+              </ProtectedComponent>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   )
