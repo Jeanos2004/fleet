@@ -36,13 +36,13 @@ const scaleOnHover = {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
       <motion.nav 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50"
+        className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -50,23 +50,23 @@ export default function HomePage() {
               className="flex items-center space-x-2"
               whileHover={{ scale: 1.05 }}
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Truck className="h-5 w-5 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Truck className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold text-primary">
                 FleetPro
               </span>
             </motion.div>
             
             <div className="flex items-center space-x-4">
               <Link href="/auth/login">
-                <Button variant="ghost" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
+                <Button variant="ghost" className="text-foreground hover:bg-accent">
                   Connexion
                 </Button>
               </Link>
               <Link href="/auth/register">
                 <motion.div {...scaleOnHover}>
-                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     Commencer
                   </Button>
                 </motion.div>
@@ -86,25 +86,25 @@ export default function HomePage() {
             animate="animate"
           >
             <motion.div variants={fadeInUp}>
-              <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-200">
+              <Badge className="mb-4 bg-accent text-accent-foreground border-border">
                 🚀 Solution de gestion de flotte nouvelle génération
               </Badge>
             </motion.div>
             
             <motion.h1 
               variants={fadeInUp}
-              className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6"
+              className="text-4xl md:text-6xl font-bold text-foreground mb-6"
             >
               Gérez votre flotte
               <br />
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="text-primary">
                 intelligemment
               </span>
             </motion.h1>
             
             <motion.p 
               variants={fadeInUp}
-              className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto"
+              className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto"
             >
               Une plateforme complète pour optimiser la gestion de votre flotte de véhicules, 
               suivre vos missions en temps réel et maximiser votre efficacité opérationnelle.
@@ -116,7 +116,7 @@ export default function HomePage() {
             >
               <Link href="/auth/register">
                 <motion.div {...scaleOnHover}>
-                  <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg px-8 py-3 text-lg">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg">
                     Démarrer gratuitement
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -124,7 +124,7 @@ export default function HomePage() {
               </Link>
               <Link href="#demo">
                 <motion.div {...scaleOnHover}>
-                  <Button variant="outline" size="lg" className="px-8 py-3 text-lg border-2">
+                  <Button variant="outline" size="lg" className="px-8 py-3 text-lg border-2 border-border">
                     Voir la démo
                   </Button>
                 </motion.div>
@@ -135,7 +135,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-slate-800/50">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-accent/30">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             className="text-center mb-16"
@@ -144,10 +144,10 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Fonctionnalités puissantes
             </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Tout ce dont vous avez besoin pour une gestion de flotte moderne et efficace
             </p>
           </motion.div>
@@ -164,54 +164,49 @@ export default function HomePage() {
                 icon: MapPin,
                 title: "Suivi GPS en temps réel",
                 description: "Localisez vos véhicules instantanément et optimisez vos itinéraires",
-                color: "from-green-500 to-emerald-500"
+                color: "text-green-600"
               },
               {
                 icon: BarChart3,
                 title: "Analytics avancées",
                 description: "Tableaux de bord intelligents pour des décisions éclairées",
-                color: "from-blue-500 to-cyan-500"
+                color: "text-blue-600"
               },
               {
                 icon: Shield,
                 title: "Sécurité renforcée",
-                description: "Contrôle d&apos;accès granulaire et chiffrement des données",
-                color: "from-purple-500 to-violet-500"
+                description: "Contrôle d'accès granulaire et chiffrement des données",
+                color: "text-purple-600"
               },
               {
                 icon: Clock,
                 title: "Gestion des missions",
                 description: "Planifiez et suivez vos missions avec précision",
-                color: "from-orange-500 to-red-500"
+                color: "text-orange-600"
               },
               {
                 icon: Users,
-                title: "Gestion d&apos;équipe",
+                title: "Gestion d'équipe",
                 description: "Organisez vos chauffeurs et personnels efficacement",
-                color: "from-indigo-500 to-purple-500"
+                color: "text-indigo-600"
               },
               {
                 icon: TrendingUp,
                 title: "Optimisation des coûts",
                 description: "Réduisez vos dépenses carburant et maintenance",
-                color: "from-teal-500 to-green-500"
+                color: "text-teal-600"
               }
             ].map((feature, index) => (
               <motion.div
                 key={index}
                 variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-shadow"
+                className="card-hover p-6"
               >
-                <div className={`w-12 h-12 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center mb-4`}>
-                  <feature.icon className="h-6 w-6 text-white" />
+                <div className={`w-12 h-12 rounded-lg ${feature.color} bg-accent flex items-center justify-center mb-4`}>
+                  <feature.icon className={`h-6 w-6 ${feature.color}`} />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-300">
-                  {feature.description}
-                </p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -252,7 +247,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-indigo-600">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-primary">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -260,78 +255,60 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
               Prêt à transformer votre gestion de flotte ?
             </h2>
-            <p className="text-xl text-blue-100 mb-8">
-              Rejoignez des centaines d&apos;entreprises qui nous font confiance
+            <p className="text-xl text-primary-foreground/80 mb-8">
+              Rejoignez des centaines d'entreprises qui font confiance à FleetPro
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/auth/register">
-                <motion.div {...scaleOnHover}>
-                  <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 text-lg font-semibold">
-                    Commencer maintenant
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </motion.div>
-              </Link>
-              <Link href="/contact">
-                <motion.div {...scaleOnHover}>
-                  <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg">
-                    Nous contacter
-                  </Button>
-                </motion.div>
-              </Link>
-            </div>
+            <Link href="/auth/register">
+              <motion.div {...scaleOnHover}>
+                <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
+                  Commencer maintenant
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </motion.div>
+            </Link>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-card border-t border-border py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Truck className="h-5 w-5 text-white" />
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <Truck className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold">FleetPro</span>
+                <span className="text-xl font-bold text-primary">FleetPro</span>
               </div>
-              <p className="text-slate-400">
-                La solution de gestion de flotte nouvelle génération
+              <p className="text-muted-foreground max-w-md">
+                La solution complète pour la gestion moderne de votre flotte de véhicules.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Produit</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white">Fonctionnalités</a></li>
-                <li><a href="#" className="hover:text-white">Tarifs</a></li>
-                <li><a href="#" className="hover:text-white">API</a></li>
+              <h3 className="font-semibold text-foreground mb-4">Produit</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link href="#" className="hover:text-foreground">Fonctionnalités</Link></li>
+                <li><Link href="#" className="hover:text-foreground">Tarifs</Link></li>
+                <li><Link href="#" className="hover:text-foreground">API</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white">Documentation</a></li>
-                <li><a href="#" className="hover:text-white">Contact</a></li>
-                <li><a href="#" className="hover:text-white">Status</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Entreprise</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white">À propos</a></li>
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-                <li><a href="#" className="hover:text-white">Carrières</a></li>
+              <h3 className="font-semibold text-foreground mb-4">Support</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link href="#" className="hover:text-foreground">Documentation</Link></li>
+                <li><Link href="#" className="hover:text-foreground">Contact</Link></li>
+                <li><Link href="#" className="hover:text-foreground">Status</Link></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
+          <div className="mt-8 pt-8 border-t border-border text-center text-muted-foreground">
             <p>&copy; 2024 FleetPro. Tous droits réservés.</p>
           </div>
         </div>
