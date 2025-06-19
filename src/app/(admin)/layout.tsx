@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import '../globals.css'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/components/providers/auth-provider'
@@ -51,10 +51,16 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="flex h-screen">
+            <div className="flex h-screen bg-background">
+              <div className="w-64 flex-shrink-0">
+                <Navigation />
+              </div>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <Header />
                 <main className="flex-1 overflow-auto">
                   {children}
-                </main>   
+                </main>
+              </div>
             </div>
             <Toaster />
           </ThemeProvider>
