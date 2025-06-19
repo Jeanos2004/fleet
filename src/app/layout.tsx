@@ -49,11 +49,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="flex h-screen">
+            
                 <main className="flex-1 overflow-auto">
                   {children}
                 </main>   
-            </div>
+           
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
