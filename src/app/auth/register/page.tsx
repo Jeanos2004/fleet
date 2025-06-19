@@ -98,7 +98,7 @@ export default function RegisterPage() {
               Rejoignez FleetPro
             </h1>
             <p className="text-xl text-indigo-100 mb-8">
-              Transformez la gestion de votre flotte dès aujourd'hui
+              Transformez la gestion de votre flotte dès aujourd&apos;hui
             </p>
           </div>
 
@@ -302,7 +302,7 @@ export default function RegisterPage() {
                 <>
                   <motion.div variants={fadeInUp}>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Nom de l'entreprise
+                      Nom de l&apos;entreprise
                     </label>
                     <div className="relative">
                       <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -381,9 +381,9 @@ export default function RegisterPage() {
                     className="w-4 h-4 text-indigo-600 bg-white border-slate-300 rounded focus:ring-indigo-500 focus:ring-2 mt-1"
                   />
                   <label htmlFor="terms" className="text-sm text-slate-600 dark:text-slate-300">
-                    J'accepte les{' '}
+                    J&apos;accepte les{' '}
                     <Link href="/terms" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                      conditions d'utilisation
+                      conditions d&apos;utilisation
                     </Link>{' '}
                     et la{' '}
                     <Link href="/privacy" className="text-indigo-600 hover:text-indigo-700 font-medium">
@@ -446,7 +446,7 @@ export default function RegisterPage() {
                 🎁 Offre de lancement
               </p>
               <ul className="text-xs text-indigo-600 dark:text-indigo-400 space-y-1">
-                <li>• 30 jours d'essai gratuit</li>
+                <li>• 30 jours d&apos;essai gratuit</li>
                 <li>• Configuration personnalisée incluse</li>
                 <li>• Support prioritaire pendant 3 mois</li>
               </ul>

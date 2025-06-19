@@ -62,7 +62,7 @@ const generateMockTelemetryData = (camionId: string): TelemetryData => {
 
 export function RealTimeDashboard() {
   const [telemetryData, setTelemetryData] = useState<Record<string, TelemetryData>>({})
-  const [isConnected, setIsConnected] = useState(true)
+  const [isConnected] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
   // Simulation de la réception de données télémétrie
@@ -184,7 +184,6 @@ export function RealTimeDashboard() {
 
           const hasAlerts = data.alertes.length > 0
           const highTemp = data.temperatureMoteur > 95
-          const lowPressure = data.pressionPneus.some(p => p < 7.8)
 
           return (
             <Card key={camionId} className={hasAlerts ? 'border-red-200 dark:border-red-800' : ''}>

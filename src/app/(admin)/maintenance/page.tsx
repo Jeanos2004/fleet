@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { mockCamions } from '@/lib/db/mock-data'
 import { getStatusColor, formatDate, formatCurrency } from '@/lib/utils'
-import { Plus, Wrench, AlertTriangle, Clock, CheckCircle, XCircle, Calendar, Settings, Hammer } from 'lucide-react'
+import { Plus, Wrench, Clock, Calendar, Settings, Hammer } from 'lucide-react'
 
 // Données mockées pour les ordres de travail
 const mockWorkOrders = [

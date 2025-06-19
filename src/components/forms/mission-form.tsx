@@ -9,7 +9,14 @@ import { calculateMissionCosts, calculateDistance } from '@/lib/utils'
 import { Plus, Minus, MapPin, Calculator } from 'lucide-react'
 
 interface MissionFormProps {
-  onSubmit: (data: any) => void
+  onSubmit: (data: {
+    camionId: string
+    chauffeurId: string
+    dateDebut: string
+    sites: Array<{ siteId: string; quantiteLivree: number }>
+    distanceEstimee: number
+    fraisEstimes: { carburant: number; peages: number; primes: number; total: number }
+  }) => void
   onCancel: () => void
 }
 
@@ -44,7 +51,7 @@ export function MissionForm({ onSubmit, onCancel }: MissionFormProps) {
     }
   }
 
-  const updateSite = (index: number, field: string, value: any) => {
+  const updateSite = (index: number, field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       sites: prev.sites.map((site, i) => 

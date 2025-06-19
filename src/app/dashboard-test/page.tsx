@@ -7,9 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { 
   Truck, 
   Users, 
-  MapPin, 
   Activity,
-  TrendingUp,
   AlertTriangle,
   CheckCircle,
   Clock

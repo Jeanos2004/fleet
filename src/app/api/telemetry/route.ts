@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       total: realtimeData.length,
       timestamp: new Date()
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la récupération des données télémétrie' },
       { status: 500 }
@@ -76,9 +76,9 @@ export async function POST(request: Request) {
       data: newTelemetryData,
       message: 'Données télémétrie enregistrées'
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: 'Erreur lors de l\'enregistrement des données télémétrie' },
+      { success: false, error: 'Erreur lors de l&apos;enregistrement des données télémétrie' },
       { status: 500 }
     )
   }

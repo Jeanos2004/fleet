@@ -12,10 +12,6 @@ import {
   Clock, 
   Users,
   ArrowRight,
-  CheckCircle,
-  Zap,
-  Globe,
-  Smartphone,
   TrendingUp
 } from 'lucide-react'
 
@@ -179,7 +175,7 @@ export default function HomePage() {
               {
                 icon: Shield,
                 title: "Sécurité renforcée",
-                description: "Contrôle d'accès granulaire et chiffrement des données",
+                description: "Contrôle d&apos;accès granulaire et chiffrement des données",
                 color: "from-purple-500 to-violet-500"
               },
               {
@@ -190,7 +186,7 @@ export default function HomePage() {
               },
               {
                 icon: Users,
-                title: "Gestion d'équipe",
+                title: "Gestion d&apos;équipe",
                 description: "Organisez vos chauffeurs et personnels efficacement",
                 color: "from-indigo-500 to-purple-500"
               },
@@ -268,7 +264,7 @@ export default function HomePage() {
               Prêt à transformer votre gestion de flotte ?
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Rejoignez des centaines d'entreprises qui nous font confiance
+              Rejoignez des centaines d&apos;entreprises qui nous font confiance
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/auth/register">

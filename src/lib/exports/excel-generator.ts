@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx'
-import { Mission, Camion, Marketeur } from '@/types'
+import { Mission, Camion } from '@/types'
 
 export class ExcelGenerator {
   static async generateMissionsReport(missions: Mission[]): Promise<Blob> {

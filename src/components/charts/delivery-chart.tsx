@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, TooltipItem } from 'chart.js'
 import { Bar } from 'react-chartjs-2'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -47,7 +46,7 @@ export function DeliveryChart({ title = "Livraisons par jour" }: DeliveryChartPr
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: TooltipItem<'bar'>) {
             return `${context.dataset.label}: ${context.parsed.y} livraisons`
           }
         }

@@ -55,7 +55,7 @@ export default function MissionsPage() {
                   <Clock className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Terminées aujourd'hui</p>
+                  <p className="text-sm font-medium text-muted-foreground">Terminées aujourd&apos;hui</p>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="text-2xl font-bold text-card-foreground">12</span>
                   </div>

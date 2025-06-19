@@ -13,7 +13,7 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
               <p className="text-muted-foreground mt-2">
-                Vue d'ensemble de votre flotte de camions-citernes
+                Vue d&apos;ensemble de votre flotte de camions-citernes
               </p>
             </div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -45,7 +45,7 @@ export default function DashboardPage() {
           <div className="stat-card">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-card-foreground">
-                Missions aujourd'hui
+                Missions aujourd&apos;hui
               </h3>
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                 <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +99,7 @@ export default function DashboardPage() {
           <div className="stat-card">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-card-foreground">
-                Alertes & Notifications
+                Alertes &amp; Notifications
               </h3>
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                 <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">

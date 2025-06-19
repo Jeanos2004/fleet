@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AuditLogs } from '@/components/admin/audit-logs'
 import { mockMarketeurs, mockSites } from '@/lib/db/mock-data'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { Plus, Users, Building, Settings, Shield, Edit, Trash2, Eye, FileText, UserCheck } from 'lucide-react'
 
 // Données mockées pour les utilisateurs
@@ -239,7 +238,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Logs d'audit
+                Logs d&apos;audit
               </h2>
               <Button variant="outline" size="sm">Exporter</Button>
             </div>

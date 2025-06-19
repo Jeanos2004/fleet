@@ -209,7 +209,7 @@ export interface ApprovalStep {
 export interface ApprovalCondition {
   field: string
   operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte'
-  value: any
+  value: string | number | boolean
 }
 
 // État d'une approbation

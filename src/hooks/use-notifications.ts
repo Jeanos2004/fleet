@@ -75,8 +75,8 @@ export function useNotifications() {
         badge: options.badge || '/icon-72x72.png',
         tag: options.tag,
         requireInteraction: options.requireInteraction || false,
-        actions: options.actions || [],
-        vibrate: [100, 50, 100],
+        // actions: options.actions || [], // Non supporté dans tous les navigateurs
+        // vibrate: [100, 50, 100], // Non supporté dans l'API Notification standard
         data: {
           timestamp: Date.now()
         }
@@ -178,8 +178,6 @@ export function useNotifications() {
   const sendMaintenanceReminders = () => {
     // Cette fonction serait appelée périodiquement pour vérifier
     // les maintenances à venir et envoyer des rappels
-    const now = new Date()
-    const reminderThreshold = 7 * 24 * 60 * 60 * 1000 // 7 jours
 
     // Ici on vérifierait la base de données pour les maintenances à venir
     // et enverrait des notifications de rappel

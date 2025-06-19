@@ -18,7 +18,7 @@ export async function GET() {
       data: enrichedMissions,
       total: enrichedMissions.length
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la récupération des missions' },
       { status: 500 }
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       statut: 'PLANIFIEE',
       camionId: body.camionId,
       chauffeurId: body.chauffeurId,
-      sites: body.sites.map((site: any, index: number) => ({
+      sites: body.sites.map((site: { siteId: string; quantiteLivree: number }, index: number) => ({
         id: String(Date.now() + index),
         missionId: String(mockMissions.length + 1),
         siteId: site.siteId,
@@ -66,14 +66,14 @@ export async function POST(request: Request) {
     }
 
     // Ajouter à la liste mockée (en réalité, on sauvegarderait en BDD)
-    mockMissions.push(newMission as any)
+    mockMissions.push(newMission as typeof mockMissions[0])
 
     return NextResponse.json({
       success: true,
       data: newMission,
       message: 'Mission créée avec succès'
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la création de la mission' },
       { status: 500 }

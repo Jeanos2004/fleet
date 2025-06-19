@@ -6,7 +6,7 @@ interface AuditLog {
   action: string
   resource: string
   resourceId?: string
-  details: Record<string, any>
+  details: Record<string, unknown>
   ipAddress?: string
   userAgent?: string
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
@@ -58,7 +58,7 @@ class AuditLogger {
     })
   }
 
-  logMissionAction(userId: string, userEmail: string, action: string, missionId: string, details: any = {}) {
+  logMissionAction(userId: string, userEmail: string, action: string, missionId: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -70,7 +70,7 @@ class AuditLogger {
     })
   }
 
-  logFleetAction(userId: string, userEmail: string, action: string, camionId: string, details: any = {}) {
+  logFleetAction(userId: string, userEmail: string, action: string, camionId: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -82,7 +82,7 @@ class AuditLogger {
     })
   }
 
-  logMaintenanceAction(userId: string, userEmail: string, action: string, workOrderId: string, details: any = {}) {
+  logMaintenanceAction(userId: string, userEmail: string, action: string, workOrderId: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -94,7 +94,7 @@ class AuditLogger {
     })
   }
 
-  logUserAction(userId: string, userEmail: string, action: string, targetUserId: string, details: any = {}) {
+  logUserAction(userId: string, userEmail: string, action: string, targetUserId: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -106,7 +106,7 @@ class AuditLogger {
     })
   }
 
-  logDataExport(userId: string, userEmail: string, exportType: string, details: any = {}) {
+  logDataExport(userId: string, userEmail: string, exportType: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -117,7 +117,7 @@ class AuditLogger {
     })
   }
 
-  logSystemAction(userId: string, userEmail: string, action: string, details: any = {}) {
+  logSystemAction(userId: string, userEmail: string, action: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -128,7 +128,7 @@ class AuditLogger {
     })
   }
 
-  logSecurityEvent(userId: string, userEmail: string, event: string, details: any = {}) {
+  logSecurityEvent(userId: string, userEmail: string, event: string, details: Record<string, unknown> = {}) {
     return this.log({
       userId,
       userEmail,
@@ -235,7 +235,7 @@ class AuditLogger {
   }
 
   // Export des logs
-  exportLogs(format: 'JSON' | 'CSV' = 'JSON', filters?: any): string {
+  exportLogs(format: 'JSON' | 'CSV' = 'JSON', filters?: Record<string, unknown>): string {
     const logs = this.getLogs(filters)
 
     if (format === 'CSV') {

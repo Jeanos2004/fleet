@@ -1,10 +1,7 @@
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { ExportManager } from '@/components/reports/export-manager'
-import { mockMarketeurs, mockMissions } from '@/lib/db/mock-data'
-import { formatDate, formatCurrency, getStatusColor } from '@/lib/utils'
-import { FileText, Download, Eye, Mail, Calendar, TrendingUp, DollarSign, Clock, BarChart3 } from 'lucide-react'
+import { formatDate, formatCurrency } from '@/lib/utils'
+import { FileText, Download, Eye, Calendar, TrendingUp, DollarSign, Clock, BarChart3 } from 'lucide-react'
 
 // Données mockées pour les factures
 const mockFactures = [
@@ -117,7 +114,7 @@ export default function ReportsPage() {
                   <DollarSign className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Chiffre d'affaires</p>
+                  <p className="text-sm font-medium text-muted-foreground">Chiffre d&apos;affaires</p>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="text-2xl font-bold text-card-foreground">{formatCurrency(totalFactures)}</span>
                   </div>

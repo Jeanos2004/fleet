@@ -14,8 +14,7 @@ import {
   AlertTriangle,
   User,
   Activity,
-  Clock,
-  Search
+  Clock
 } from 'lucide-react'
 
 interface AuditLog {
@@ -26,7 +25,7 @@ interface AuditLog {
   action: string
   resource: string
   resourceId?: string
-  details: Record<string, any>
+  details: Record<string, unknown>
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 }
 
@@ -59,7 +58,13 @@ export function AuditLogs() {
     startDate: '',
     endDate: ''
   })
-  const [stats, setStats] = useState<any>(null)
+  const [stats, setStats] = useState<{
+    total: number
+    recentActivity: number
+    bySeverity: Record<string, number>
+    byUser: Record<string, number>
+    byResource: Record<string, number>
+  } | null>(null)
   const [showDetails, setShowDetails] = useState<string | null>(null)
 
   useEffect(() => {
@@ -68,9 +73,21 @@ export function AuditLogs() {
     setLogs(allLogs)
     setFilteredLogs(allLogs)
 
-    // Charger les statistiques
+    // Charger les statistiques et calculer les stats manquantes
     const logStats = auditLogger.getLogStats()
-    setStats(logStats)
+    const byUser: Record<string, number> = {}
+    const byResource: Record<string, number> = {}
+    
+    allLogs.forEach(log => {
+      byUser[log.userEmail] = (byUser[log.userEmail] || 0) + 1
+      byResource[log.resource] = (byResource[log.resource] || 0) + 1
+    })
+    
+    setStats({
+      ...logStats,
+      byUser,
+      byResource
+    })
 
     // Simuler quelques logs pour la démo
     if (allLogs.length === 0) {
@@ -336,7 +353,7 @@ export function AuditLogs() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            Logs d'Audit ({filteredLogs.length})
+            Logs d&apos;Audit ({filteredLogs.length})
           </CardTitle>
         </CardHeader>
         <CardContent>

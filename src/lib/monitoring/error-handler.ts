@@ -19,7 +19,7 @@ interface ErrorLog {
     colno?: number
     resolution?: string
     resolvedAt?: string
-    [key: string]: any // Permet d'ajouter d'autres propriétés
+    [key: string]: unknown // Permet d'ajouter d'autres propriétés
   }
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
   resolved: boolean
@@ -79,7 +79,7 @@ class ErrorHandler {
     }, statusCode && statusCode >= 500 ? 'HIGH' : 'MEDIUM')
   }
 
-  logComponentError(error: Error, componentName: string, props?: any) {
+  logComponentError(error: Error, componentName: string, props?: Record<string, unknown>) {
     return this.logError(error, {
       component: componentName,
       action: 'RENDER',
@@ -108,7 +108,7 @@ class ErrorHandler {
     }, 'HIGH')
   }
 
-  logBusinessLogicError(error: Error, businessRule: string, data?: any) {
+  logBusinessLogicError(error: Error, businessRule: string, data?: Record<string, unknown>) {
     return this.logError(error, {
       component: 'BUSINESS_LOGIC',
       action: businessRule,
@@ -117,7 +117,7 @@ class ErrorHandler {
   }
 
   // Gestion des erreurs React
-  handleReactError(error: Error, errorInfo: any) {
+  handleReactError(error: Error, errorInfo: { componentStack?: string }) {
     return this.logError(error, {
       component: 'REACT_ERROR_BOUNDARY',
       action: 'COMPONENT_ERROR',
@@ -255,7 +255,7 @@ class ErrorHandler {
   }
 
   // Export des erreurs
-  exportErrors(format: 'JSON' | 'CSV' = 'JSON', filters?: any): string {
+  exportErrors(format: 'JSON' | 'CSV' = 'JSON', filters?: Record<string, unknown>): string {
     const errors = this.getErrors(filters)
 
     if (format === 'CSV') {

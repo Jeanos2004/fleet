@@ -6,7 +6,15 @@ import { formatDate, formatCurrency } from '@/lib/utils'
 // Extension du type jsPDF pour inclure autoTable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF
+    autoTable: (options: {
+      startY?: number
+      head?: unknown[][]
+      body?: unknown[][]
+      theme?: 'striped' | 'grid' | 'plain'
+      headStyles?: Record<string, unknown>
+      styles?: Record<string, unknown>
+      columnStyles?: Record<number, Record<string, unknown>>
+    }) => jsPDF
     lastAutoTable: {
       finalY: number
     }
@@ -130,7 +138,15 @@ export class PDFGenerator {
     return this.doc
   }
 
-  generateMaintenanceReport(workOrders: any[], camions: Camion[]) {
+  generateMaintenanceReport(workOrders: Array<{
+    id: string
+    camionId: string
+    type: string
+    statut: string
+    dateCreation: Date
+    dateFin?: Date
+    cout?: number
+  }>, camions: Camion[]) {
     this.addHeader('Rapport de Maintenance', `${workOrders.length} ordres de travail`)
 
     // Statistiques maintenance

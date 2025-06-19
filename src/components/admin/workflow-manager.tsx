@@ -71,9 +71,8 @@ const mockWorkflows: ApprovalWorkflow[] = [
 ]
 
 export function WorkflowManager() {
-  const { user, hasPermission } = useAuth()
+  const { hasPermission } = useAuth()
   const [workflows, setWorkflows] = useState<ApprovalWorkflow[]>(mockWorkflows)
-  const [selectedWorkflow, setSelectedWorkflow] = useState<ApprovalWorkflow | null>(null)
 
   if (!hasPermission('ADMIN_SYSTEM')) {
     return (
@@ -116,9 +115,9 @@ export function WorkflowManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-card-foreground">Workflows d'Approbation</h2>
+          <h2 className="text-2xl font-semibold text-card-foreground">Workflows d&apos;Approbation</h2>
           <p className="text-muted-foreground">
-            Gestion des processus de validation et d'approbation
+            Gestion des processus de validation et d&apos;approbation
           </p>
         </div>
         <Button className="flex items-center gap-2">
@@ -177,7 +176,7 @@ export function WorkflowManager() {
             {/* Workflow Steps */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium text-card-foreground mb-3">
-                Étapes d'approbation ({workflow.steps.length})
+                Étapes d&apos;approbation ({workflow.steps.length})
               </h4>
               
               <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -278,7 +277,7 @@ export function WorkflowManager() {
           </div>
           
           <div className="space-y-4">
-            <h4 className="font-medium text-card-foreground">Délais d'approbation</h4>
+            <h4 className="font-medium text-card-foreground">Délais d&apos;approbation</h4>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm text-card-foreground">Délai standard</span>

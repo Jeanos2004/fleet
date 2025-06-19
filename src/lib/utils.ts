@@ -49,4 +49,35 @@ export function getStatusColor(status: string): string {
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371 // Rayon de la Terre en kilomètres
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
+}
+
+export function calculateMissionCosts(distance: number, fuelConsumption: number = 35): {
+  carburant: number
+  peages: number
+  primes: number
+  total: number
+} {
+  const fuelPrice = 1.45 // Prix du gasoil en €/L
+  const carburant = (distance * fuelConsumption / 100) * fuelPrice
+  const peages = distance * 0.15 // Estimation péages
+  const primes = Math.ceil(distance / 500) * 120 // 120€ par jour de mission
+  
+  return {
+    carburant: Math.round(carburant * 100) / 100,
+    peages: Math.round(peages * 100) / 100,
+    primes,
+    total: Math.round((carburant + peages + primes) * 100) / 100
+  }
 } 

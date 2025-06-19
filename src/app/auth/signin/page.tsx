@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,7 +33,7 @@ export default function SignInPage() {
         // Rediriger vers le dashboard après connexion réussie
         router.push('/dashboard')
       }
-    } catch (error) {
+    } catch {
       setError('Une erreur est survenue lors de la connexion')
     } finally {
       setIsLoading(false)
