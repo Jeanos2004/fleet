@@ -4,8 +4,6 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/components/providers/auth-provider'
-import { Navigation } from '@/components/ui/navigation'
-import { Header } from '@/components/layout/header'
 
 const inter = Inter({ subsets: ['latin'] })
 

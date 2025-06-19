@@ -64,7 +64,7 @@ export default function HomePage() {
             
             <div className="flex items-center space-x-4">
               <Link href="/auth/login">
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
+                <Button variant="ghost" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
                   Connexion
                 </Button>
               </Link>
