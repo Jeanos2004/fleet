@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { Truck, Euro, TrendingUp, Wrench, Shield, Plus, Search, Download, Fuel } from 'lucide-react'
 
 interface Expense {
@@ -63,7 +63,7 @@ const mockExpenses: Expense[] = [
 ]
 
 export default function VehicleExpensesPage() {
-  const { hasPermission } = useRolePermissions()
+  const { hasPermission } = useDemoAuth()
   const [expenses] = useState<Expense[]>(mockExpenses)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -307,3 +307,4 @@ export default function VehicleExpensesPage() {
     </div>
   )
 } 
+

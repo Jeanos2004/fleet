@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth } from '@/components/providers/demo-auth-provider'
 import { 
   User, 
   Mail, 
@@ -86,7 +86,7 @@ const mockDrivers: Driver[] = [
 ]
 
 export function DriverManager() {
-  const { hasPermission, isDriver } = useRolePermissions()
+  const { hasPermission, isDriver } = useDemoAuth()
   const [drivers, setDrivers] = useState<Driver[]>(mockDrivers)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null)
@@ -198,12 +198,10 @@ export function DriverManager() {
             Gérez votre équipe de chauffeurs et leurs informations
           </p>
         </div>
-        <ProtectedComponent resource="drivers" action="create">
-          <Button onClick={handleAdd} className="w-full sm:w-auto shadow-lg border-2 border-transparent hover:border-primary/20">
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter un chauffeur
-          </Button>
-        </ProtectedComponent>
+        <Button onClick={handleAdd} className="w-full sm:w-auto shadow-lg border-2 border-transparent hover:border-primary/20">
+          <Plus className="h-4 w-4 mr-2" />
+          Ajouter un chauffeur
+        </Button>
       </div>
 
       {/* Drivers Grid - Responsive */}
@@ -286,28 +284,24 @@ export function DriverManager() {
                   <Eye className="h-3 w-3 mr-1" />
                   Voir
                 </Button>
-                <ProtectedComponent resource="drivers" action="update">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(driver)}
-                    className="flex-1 border-2 hover:border-blue-500 hover:bg-blue-50"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Modifier
-                  </Button>
-                </ProtectedComponent>
-                <ProtectedComponent resource="drivers" action="delete">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(driver)}
-                    className="flex-1 border-2 hover:border-red-500 hover:bg-red-50 text-red-600"
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Suppr.
-                  </Button>
-                </ProtectedComponent>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEdit(driver)}
+                  className="flex-1 border-2 hover:border-blue-500 hover:bg-blue-50"
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  Modifier
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDelete(driver)}
+                  className="flex-1 border-2 hover:border-red-500 hover:bg-red-50 text-red-600"
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Suppr.
+                </Button>
               </div>
             </CardContent>
           </Card>

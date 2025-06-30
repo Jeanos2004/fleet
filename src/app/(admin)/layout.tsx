@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { AuthProvider } from '@/components/providers/auth-provider'
+import { DemoAuthProvider } from '@/components/providers/demo-auth-provider'
 import { Navigation } from '@/components/ui/navigation'
 import { Header } from '@/components/layout/header'
 
@@ -14,7 +14,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthProvider>
+    <DemoAuthProvider>
       <div className="flex h-screen bg-background">
         <div className="w-64 flex-shrink-0">
           <Navigation />
@@ -26,6 +26,6 @@ export default function AdminLayout({
           </main>
         </div>
       </div>
-    </AuthProvider>
+    </DemoAuthProvider>
   )
 }

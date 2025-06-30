@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { 
   Truck, 
   Calendar, 
@@ -133,7 +133,7 @@ const mockVehicles: Vehicle[] = [
 ]
 
 export function VehicleManager() {
-  const { hasPermission } = useRolePermissions()
+  const { hasPermission } = useDemoAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)

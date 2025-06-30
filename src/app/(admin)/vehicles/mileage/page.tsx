@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { Truck, TrendingUp, Fuel, BarChart3, Calendar, Plus, Search, Download } from 'lucide-react'
 
 interface MileageRecord {
@@ -72,7 +72,7 @@ const mockMileageRecords: MileageRecord[] = [
 ]
 
 export default function VehicleMileagePage() {
-  const { hasPermission } = useRolePermissions()
+  const { hasPermission } = useDemoAuth()
   const [records] = useState<MileageRecord[]>(mockMileageRecords)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -306,3 +306,4 @@ export default function VehicleMileagePage() {
     </div>
   )
 } 
+

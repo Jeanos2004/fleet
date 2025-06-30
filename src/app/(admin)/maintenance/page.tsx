@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { Wrench, AlertTriangle, Calendar, Clock, Plus, Filter, Search } from 'lucide-react'
 
 interface MaintenanceIntervention {
@@ -80,7 +80,7 @@ const mockInterventions: MaintenanceIntervention[] = [
 ]
 
 export default function MaintenancePage() {
-  const { hasPermission } = useRolePermissions()
+  const { hasPermission } = useDemoAuth()
   const [interventions] = useState<MaintenanceIntervention[]>(mockInterventions)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -345,3 +345,4 @@ export default function MaintenancePage() {
     </div>
   )
 } 
+

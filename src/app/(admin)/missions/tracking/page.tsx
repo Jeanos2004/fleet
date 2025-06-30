@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { MapPin, Clock, Truck, Navigation, AlertCircle, CheckCircle, Search } from 'lucide-react'
 
 interface TrackedMission {

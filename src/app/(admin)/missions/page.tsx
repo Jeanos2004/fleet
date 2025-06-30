@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useRolePermissions, ProtectedComponent } from '@/hooks/use-role-permissions'
+import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { MapPin, Clock, Truck, User, Plus, Filter, Search } from 'lucide-react'
 
 interface Mission {
@@ -76,7 +76,7 @@ const mockMissions: Mission[] = [
 ]
 
 export default function MissionsPage() {
-  const { hasPermission } = useRolePermissions()
+  const { hasPermission } = useDemoAuth()
   const [missions] = useState<Mission[]>(mockMissions)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -272,3 +272,4 @@ export default function MissionsPage() {
     </div>
   )
 } 
+
