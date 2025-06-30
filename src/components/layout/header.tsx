@@ -126,7 +126,7 @@ export function Header({
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="relative h-9 w-9 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-slate-700 dark:hover:to-slate-600 transition-all duration-300 shadow-sm hover:shadow-md border border-blue-200/50 dark:border-slate-600/50"
+              className="relative h-9 w-9 rounded-lg dark:from-slate-800 dark:to-slate-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-slate-700 dark:hover:to-slate-600 transition-all duration-300 shadow-sm hover:shadow-md border border-blue-200/50 dark:border-slate-600/50"
             >
               <motion.div
                 key={theme}
