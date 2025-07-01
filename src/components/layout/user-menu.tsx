@@ -17,7 +17,7 @@ export function UserMenu() {
     logout()
     setIsOpen(false)
     // Rediriger vers la page de connexion si nécessaire
-    window.location.href = '/auth/signin'
+    window.location.href = '/auth/login'
   }
 
   const handleSwitchUser = (userId: string) => {
