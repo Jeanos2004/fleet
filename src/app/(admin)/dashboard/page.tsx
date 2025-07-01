@@ -368,9 +368,9 @@ export default function DashboardPage() {
             <CardContent>
               <div className="space-y-3">
                 {alertes.map((alerte, index) => (
-                  <div key={index} className={`p-3 rounded-lg border-l-4 ${
-                    alerte.priority === 'high' ? 'border-red-500 bg-red-50 dark:bg-red-950' :
-                    alerte.priority === 'medium' ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' :
+                  <div key={index} className={`text-white p-3 rounded-lg border-l-4 ${
+                    alerte.priority === 'high' ? 'border-red-500 bg-red-350 dark:bg-red-700' :
+                    alerte.priority === 'medium' ? 'border-orange-500 bg-orange-350 dark:bg-orange-600' :
                     'border-blue-500 bg-blue-50 dark:bg-blue-950'
                   }`}>
                     <div className="flex items-start gap-3">
@@ -388,7 +388,7 @@ export default function DashboardPage() {
                             {alerte.priority === 'high' ? 'Urgent' :
                              alerte.priority === 'medium' ? 'Moyen' : 'Info'}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">Il y a 2h</span>
+                          <span className="text-xs text-gray-100 dark:text-muted-foreground">Il y a 2h</span>
                         </div>
                       </div>
                     </div>
