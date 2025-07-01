@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
-import { useRef, useEffect, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -62,8 +62,6 @@ const GradientText = ({ children, className = "" }: { children: React.ReactNode,
 )
 
 export default function HomePage() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const { scrollY } = useScroll()
   const heroRef = useRef(null)
   const featuresRef = useRef(null)
   const statsRef = useRef(null)
@@ -71,20 +69,6 @@ export default function HomePage() {
   const heroInView = useInView(heroRef, { once: true })
   const featuresInView = useInView(featuresRef, { once: true })
   const statsInView = useInView(statsRef, { once: true })
-
-  // Parallax effects
-  const y1 = useTransform(scrollY, [0, 500], [0, -100])
-  const y2 = useTransform(scrollY, [0, 500], [0, -200])
-  const opacity = useTransform(scrollY, [0, 300], [1, 0])
-
-  // Mouse tracking for hero background
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
 
   const stats = [
     { number: "10K+", label: "Véhicules gérés", icon: Truck },
@@ -124,7 +108,7 @@ export default function HomePage() {
     },
     {
       icon: Users,
-      title: "Management d'Équipe",
+      title: "Management d&apos;Équipe",
       description: "Gestion complète des chauffeurs, formation, évaluations de performance et système de récompenses intégré.",
       color: "from-indigo-500 to-blue-600",
       delay: 0.4
@@ -132,7 +116,7 @@ export default function HomePage() {
     {
       icon: TrendingUp,
       title: "ROI Optimisé",
-      description: "Réduction moyenne de 30% des coûts opérationnels grâce à l'optimisation automatique et l'analyse prédictive.",
+      description: "Réduction moyenne de 30% des coûts opérationnels grâce à l&apos;optimisation automatique et l&apos;analyse prédictive.",
       color: "from-teal-500 to-green-600",
       delay: 0.5
     }
@@ -234,7 +218,7 @@ export default function HomePage() {
               variants={fadeInUp}
               className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed"
             >
-              La plateforme tout-en-un propulsée par l'IA pour optimiser, sécuriser et transformer 
+              La plateforme tout-en-un propulsée par l&apos;IA pour optimiser, sécuriser et transformer 
               votre flotte de véhicules. Rejoignez plus de 500 entreprises qui nous font confiance.
             </motion.p>
             
@@ -391,7 +375,7 @@ export default function HomePage() {
             
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Transformez votre flotte 
-              <GradientText className="block">dès aujourd'hui</GradientText>
+              <GradientText className="block">dès aujourd&apos;hui</GradientText>
             </h2>
             
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">

@@ -14,8 +14,6 @@ import {
   Eye, 
   EyeOff, 
   ArrowRight,
-  Shield,
-  Zap,
   CheckCircle,
   AlertCircle,
   Sparkles
@@ -212,7 +210,7 @@ export default function LoginPage() {
           <p className="text-slate-600 dark:text-slate-300">
             Pas de compte ?{' '}
             <Link href="/auth/register" className="text-blue-600 hover:text-blue-700 font-medium">
-              S'inscrire
+              S&apos;inscrire
             </Link>
           </p>
         </div>

@@ -80,7 +80,7 @@ export function UserMenu() {
                 onClick={() => setShowUserSwitcher(!showUserSwitcher)}
               >
                 <Users className="h-4 w-4 mr-2" />
-                Changer d'utilisateur
+                Changer d&apos;utilisateur
               </Button>
               
               {showUserSwitcher && (
