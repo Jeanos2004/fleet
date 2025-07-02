@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
+import { SystemNotifications, useSystemNotifications } from '@/components/notifications/system-notifications'
 import { 
   Sun, 
   Moon, 
@@ -35,7 +36,9 @@ export function Header({
   const [mounted, setMounted] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [notifications] = useState(3) // Simulated notifications
+  
+  // Utiliser le système de notifications
+  const { notifications, markAsRead, markAllAsRead, dismiss } = useSystemNotifications()
 
   useEffect(() => {
     setMounted(true)
@@ -157,28 +160,18 @@ export function Header({
             </Button>
           </motion.div>
 
-          {/* Notifications */}
+          {/* Notifications System */}
           {showNotifications && (
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                className="relative h-9 w-9 rounded-lg bg-muted/50 hover:bg-muted transition-all duration-200"
-              >
-                <Bell className="h-4 w-4" />
-                {notifications > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
-                  >
-                    {notifications}
-                  </motion.div>
-                )}
-              </Button>
+              <SystemNotifications
+                notifications={notifications}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+                onDismiss={dismiss}
+              />
             </motion.div>
           )}
 
@@ -198,50 +191,49 @@ export function Header({
                   <User className="h-3 w-3 text-white" />
                 </div>
                 <span className="hidden sm:block text-sm font-medium">Admin</span>
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
               </Button>
             </motion.div>
 
-            {/* User Dropdown */}
+            {/* User Dropdown Menu */}
             {showUserMenu && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden"
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50"
               >
-                <div className="p-3 border-b border-border">
-                  <p className="text-sm font-medium">Jean Dupont</p>
-                  <p className="text-xs text-muted-foreground">admin@fleetpro.com</p>
-                </div>
-                
-                <div className="p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start h-8 px-2 text-sm"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Profil
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start h-8 px-2 text-sm"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Paramètres
-                  </Button>
-                  <div className="border-t border-border my-1" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start h-8 px-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Déconnexion
-                  </Button>
+                <div className="p-2">
+                  <div className="px-3 py-2 border-b border-border">
+                    <p className="text-sm font-medium">Jean Administrateur</p>
+                    <p className="text-xs text-muted-foreground">admin@fleetmanager.com</p>
+                  </div>
+                  <div className="py-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-sm"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Profil
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-sm"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Paramètres
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-sm text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Déconnexion
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -255,37 +247,28 @@ export function Header({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="md:hidden border-t border-border bg-card/95 backdrop-blur"
+          className="md:hidden border-t border-border bg-background/95 backdrop-blur"
         >
-          <div className="p-4 space-y-3">
-            <div>
-              <h2 className="text-lg font-semibold">{title}</h2>
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
-            </div>
-            
-            {showSearch && (
+          <div className="container px-4 py-3">
+            <div className="space-y-2">
+              {/* Mobile Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Rechercher..."
-                  className="w-full pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg text-sm"
                 />
               </div>
-            )}
+              
+              {/* Page Title for Mobile */}
+              <div className="py-2">
+                <h2 className="text-lg font-semibold">{title}</h2>
+                <p className="text-sm text-muted-foreground">{subtitle}</p>
+              </div>
+            </div>
           </div>
         </motion.div>
-      )}
-
-      {/* Backdrop pour fermer les menus */}
-      {(showUserMenu || showMobileMenu) && (
-        <div 
-          className="fixed inset-0 z-30 bg-transparent" 
-          onClick={() => {
-            setShowUserMenu(false)
-            setShowMobileMenu(false)
-          }}
-        />
       )}
     </motion.header>
   )

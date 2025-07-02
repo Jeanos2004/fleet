@@ -322,4 +322,15 @@ export const mockKPIs: KPI[] = [
     description: 'Réduction significative',
     status: 'good',
   },
-]; 
+];
+
+// Export global pour toutes les données mockées
+export const mockData = {
+  marketeurs: mockMarketeurs,
+  sites: mockSites,
+  camions: mockCamions,
+  chauffeurs: mockChauffeurs,
+  missions: mockMissions,
+  telemetryData: mockTelemetryData,
+  kpis: mockKPIs
+} 

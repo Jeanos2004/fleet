@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ViewToggle, useViewMode } from '@/components/ui/view-toggle'
 import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
+import { MissionsStatusChart, MissionsDistanceChart, MissionsPriorityChart } from '@/components/charts/missions-chart'
 import { MapPin, Clock, Truck, User, Plus, Filter, Search } from 'lucide-react'
 
 interface Mission {
@@ -188,6 +189,13 @@ export default function MissionsPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <MissionsStatusChart missions={missions} />
+        <MissionsDistanceChart missions={missions} />
+        <MissionsPriorityChart missions={missions} />
       </div>
 
       {/* Filters and View Toggle */}
