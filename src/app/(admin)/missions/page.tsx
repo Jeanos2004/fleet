@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ViewToggle, useViewMode } from '@/components/ui/view-toggle'
 import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
 import { MapPin, Clock, Truck, User, Plus, Filter, Search } from 'lucide-react'
 
@@ -80,6 +81,7 @@ export default function MissionsPage() {
   const [missions] = useState<Mission[]>(mockMissions)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const { viewMode, setViewMode, isCardView, isListView } = useViewMode('card')
 
   const filteredMissions = missions.filter(mission => {
     const statusMatch = statusFilter === 'all' || mission.status === statusFilter
@@ -188,8 +190,8 @@ export default function MissionsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* Filters and View Toggle */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -211,64 +213,154 @@ export default function MissionsPage() {
           <option value="completed">Terminées</option>
           <option value="cancelled">Annulées</option>
         </select>
+        <ViewToggle 
+          viewMode={viewMode} 
+          onViewModeChange={setViewMode}
+        />
       </div>
 
-      {/* Missions List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredMissions.map((mission) => (
-          <Card key={mission.id} className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-start justify-between pb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <CardTitle className="text-lg">{mission.title}</CardTitle>
-                  {getPriorityBadge(mission.priority)}
+      {/* Missions List/Cards */}
+      {isCardView ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredMissions.map((mission) => (
+            <Card key={mission.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-start justify-between pb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CardTitle className="text-lg">{mission.title}</CardTitle>
+                    {getPriorityBadge(mission.priority)}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {mission.vehiclePlate} • {mission.driverName}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {mission.vehiclePlate} • {mission.driverName}
-                </p>
-              </div>
-              {getStatusBadge(mission.status)}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Route */}
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                <div className="flex-1 text-sm">
-                  <p className="font-medium">{mission.origin}</p>
-                  <p className="text-muted-foreground">→ {mission.destination}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{mission.distance} km</p>
+                {getStatusBadge(mission.status)}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Route */}
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium">{mission.origin}</p>
+                    <p className="text-muted-foreground">→ {mission.destination}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{mission.distance} km</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Timing */}
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>{new Date(mission.startDate).toLocaleDateString()} - {new Date(mission.endDate).toLocaleDateString()}</span>
-              </div>
+                {/* Timing */}
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{new Date(mission.startDate).toLocaleDateString()} - {new Date(mission.endDate).toLocaleDateString()}</span>
+                </div>
 
-              {/* Cargo */}
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium">Chargement</p>
-                <p className="text-sm text-muted-foreground">{mission.cargo}</p>
-              </div>
+                {/* Cargo */}
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium">Chargement</p>
+                  <p className="text-sm text-muted-foreground">{mission.cargo}</p>
+                </div>
 
-              {/* Actions */}
-              <ProtectedComponent resource="missions" action="update">
-                <div className="flex gap-2 pt-3 border-t">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    Voir détails
-                  </Button>
-                  {mission.status === 'planned' && (
-                    <Button size="sm" className="flex-1">
-                      Démarrer
+                {/* Actions */}
+                <ProtectedComponent resource="missions" action="update">
+                  <div className="flex gap-2 pt-3 border-t">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      Voir détails
                     </Button>
-                  )}
+                    {mission.status === 'planned' && (
+                      <Button size="sm" className="flex-1">
+                        Démarrer
+                      </Button>
+                    )}
+                  </div>
+                </ProtectedComponent>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Liste des Missions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Table Header */}
+              <div className="hidden md:grid grid-cols-12 gap-4 p-3 bg-muted/50 rounded-lg text-sm font-medium text-muted-foreground">
+                <div className="col-span-3">Mission</div>
+                <div className="col-span-2">Véhicule/Chauffeur</div>
+                <div className="col-span-3">Trajet</div>
+                <div className="col-span-2">Date</div>
+                <div className="col-span-1">Statut</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+              
+              {/* Table Rows */}
+              {filteredMissions.map((mission) => (
+                <div key={mission.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                  {/* Mission Info */}
+                  <div className="col-span-12 md:col-span-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-foreground">{mission.title}</h3>
+                      {getPriorityBadge(mission.priority)}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{mission.cargo}</p>
+                  </div>
+                  
+                  {/* Vehicle/Driver */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Truck className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium">{mission.vehiclePlate}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <User className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-muted-foreground">{mission.driverName}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Route */}
+                  <div className="col-span-12 md:col-span-3">
+                    <div className="flex items-center gap-1 mb-1">
+                      <MapPin className="h-4 w-4 text-green-600" />
+                      <span className="text-sm">{mission.origin}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">→ {mission.destination}</div>
+                    <div className="text-xs text-muted-foreground">{mission.distance} km</div>
+                  </div>
+                  
+                  {/* Date */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{new Date(mission.startDate).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Status */}
+                  <div className="col-span-12 md:col-span-1">
+                    {getStatusBadge(mission.status)}
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="col-span-12 md:col-span-1">
+                    <ProtectedComponent resource="missions" action="update">
+                      <div className="flex gap-1">
+                        <Button variant="outline" size="sm">
+                          Voir
+                        </Button>
+                        {mission.status === 'planned' && (
+                          <Button size="sm">
+                            Start
+                          </Button>
+                        )}
+                      </div>
+                    </ProtectedComponent>
+                  </div>
                 </div>
-              </ProtectedComponent>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 } 

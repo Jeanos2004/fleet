@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
+import { ViewToggle, useViewMode } from '../ui/view-toggle'
 import { 
   Truck, 
   Calendar, 
@@ -139,6 +140,7 @@ export function VehicleManager() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
   const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null)
   const [formData, setFormData] = useState<Partial<Vehicle>>({})
+  const { viewMode, setViewMode, isCardView, isListView } = useViewMode('card')
 
   const getStatusBadge = (status: Vehicle['status']) => {
     const statusConfig = {
@@ -243,154 +245,255 @@ export function VehicleManager() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+        <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Gestion des Véhicules</h2>
           <p className="text-muted-foreground text-sm sm:text-base">
             Gérez votre flotte de véhicules et suivez leur état
           </p>
         </div>
-        <ProtectedComponent resource="vehicles" action="create">
-          <Button onClick={handleAdd} className="w-full sm:w-auto shadow-sm hover:shadow-md">
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter un véhicule
-          </Button>
-        </ProtectedComponent>
+        <div className="flex items-center gap-4">
+          <ViewToggle 
+            viewMode={viewMode} 
+            onViewModeChange={setViewMode}
+          />
+          <ProtectedComponent resource="vehicles" action="create">
+            <Button onClick={handleAdd} className="w-full sm:w-auto shadow-sm hover:shadow-md">
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter un véhicule
+            </Button>
+          </ProtectedComponent>
         </div>
+      </div>
         
-      {/* Vehicles Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {vehicles.map((vehicle) => (
-          <Card key={vehicle.id} className="bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300">
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                    <Truck className="h-6 w-6 text-muted-foreground" />
+      {/* Vehicles Display */}
+      {isCardView ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {vehicles.map((vehicle) => (
+            <Card key={vehicle.id} className="bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                      <Truck className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-semibold">
+                        {vehicle.plateNumber}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {vehicle.brand} {vehicle.model} ({vehicle.year})
+                      </p>
+                    </div>
                   </div>
-            <div>
-                    <CardTitle className="text-lg font-semibold">
-                      {vehicle.plateNumber}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {vehicle.brand} {vehicle.model} ({vehicle.year})
-              </p>
-            </div>
+                  {getStatusBadge(vehicle.status)}
                 </div>
-                {getStatusBadge(vehicle.status)}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Vehicle Info */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    {getFuelIcon(vehicle.fuelType)}
-                    <span className="text-sm font-medium">Type</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground capitalize">
-                    {vehicle.type} • {vehicle.capacity.toLocaleString()}L
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4" />
-                    <span className="text-sm font-medium">Localisation</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground truncate">
-                    {vehicle.location}
-                  </span>
-                </div>
-
-                {vehicle.driver && (
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Vehicle Info */}
+                <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium">👨‍💼 Chauffeur</span>
+                      {getFuelIcon(vehicle.fuelType)}
+                      <span className="text-sm font-medium">Type</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {vehicle.driver}
+                    <span className="text-sm text-muted-foreground capitalize">
+                      {vehicle.type} • {vehicle.capacity.toLocaleString()}L
                     </span>
                   </div>
-                )}
-              </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
-                <div className="text-center p-2 bg-muted/30 rounded">
-                  <div className="text-lg font-semibold text-foreground">
-                    {vehicle.mileage.toLocaleString()}
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-sm font-medium">Localisation</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground truncate">
+                      {vehicle.location}
+                    </span>
                   </div>
-                  <div className="text-xs text-muted-foreground">km</div>
-                </div>
-                <div className="text-center p-2 bg-muted/30 rounded">
-                  <div className="text-lg font-semibold text-foreground">
-                    {vehicle.fuelLevel}%
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {vehicle.fuelType === 'electrique' ? 'Batterie' : 'Carburant'}
-                  </div>
-                </div>
-              </div>
 
-              {/* Maintenance */}
-              <div className={`p-3 rounded-lg border ${
-                isDocumentExpiringSoon(vehicle.nextMaintenance) 
-                  ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800' 
-                  : 'bg-muted/30 border-border'
-              }`}>
-                <div className="flex items-center space-x-2 mb-1">
-                  <Settings className="h-4 w-4" />
-                  <span className="text-sm font-medium">Prochaine maintenance</span>
-                  {isDocumentExpiringSoon(vehicle.nextMaintenance) && (
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  {vehicle.driver && (
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium">👨‍💼 Chauffeur</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {vehicle.driver}
+                      </span>
+                    </div>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(vehicle.nextMaintenance).toLocaleDateString()}
-          </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+                  <div className="text-center p-2 bg-muted/30 rounded">
+                    <div className="text-lg font-semibold text-foreground">
+                      {vehicle.mileage.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">km</div>
+                  </div>
+                  <div className="text-center p-2 bg-muted/30 rounded">
+                    <div className="text-lg font-semibold text-foreground">
+                      {vehicle.fuelLevel}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {vehicle.fuelType === 'electrique' ? 'Batterie' : 'Carburant'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Maintenance */}
+                <div className={`p-3 rounded-lg border ${
+                  isDocumentExpiringSoon(vehicle.nextMaintenance) 
+                    ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800' 
+                    : 'bg-muted/30 border-border'
+                }`}>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Settings className="h-4 w-4" />
+                    <span className="text-sm font-medium">Prochaine maintenance</span>
+                    {isDocumentExpiringSoon(vehicle.nextMaintenance) && (
+                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(vehicle.nextMaintenance).toLocaleDateString()}
+                  </div>
+                </div>
+                
+                {/* Actions */}
+                <div className="flex gap-2 pt-3 border-t border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleView(vehicle)}
+                    className="flex-1 hover:bg-muted"
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
+                    Voir
+                  </Button>
+                  <ProtectedComponent resource="vehicles" action="update">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(vehicle)}
+                      className="flex-1 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Modifier
+                    </Button>
+                  </ProtectedComponent>
+                  <ProtectedComponent resource="vehicles" action="delete">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(vehicle)}
+                      className="flex-1 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Suppr.
+                    </Button>
+                  </ProtectedComponent>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        
-              {/* Actions */}
-              <div className="flex gap-2 pt-3 border-t border-border">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleView(vehicle)}
-                  className="flex-1 hover:bg-muted"
-                >
-                  <Eye className="h-3 w-3 mr-1" />
-                  Voir
-                </Button>
-                <ProtectedComponent resource="vehicles" action="update">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(vehicle)}
-                    className="flex-1 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Modifier
-                  </Button>
-                </ProtectedComponent>
-                <ProtectedComponent resource="vehicles" action="delete">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(vehicle)}
-                    className="flex-1 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400"
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Suppr.
-                  </Button>
-                </ProtectedComponent>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Liste des Véhicules</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Table Header */}
+              <div className="hidden md:grid grid-cols-12 gap-4 p-3 bg-muted/50 rounded-lg text-sm font-medium text-muted-foreground">
+                <div className="col-span-2">Véhicule</div>
+                <div className="col-span-2">Modèle</div>
+                <div className="col-span-2">Statut</div>
+                <div className="col-span-2">Localisation</div>
+                <div className="col-span-2">Maintenance</div>
+                <div className="col-span-2">Actions</div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              
+              {/* Table Rows */}
+              {vehicles.map((vehicle) => (
+                <div key={vehicle.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                  {/* Vehicle Info */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Truck className="h-4 w-4 text-blue-600" />
+                      <h3 className="font-medium text-foreground">{vehicle.plateNumber}</h3>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {vehicle.capacity.toLocaleString()}L • {vehicle.fuelLevel}%
+                    </div>
+                  </div>
+                  
+                  {/* Model */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className="font-medium text-sm">{vehicle.brand} {vehicle.model}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {vehicle.year} • {vehicle.mileage.toLocaleString()} km
+                    </div>
+                  </div>
+                  
+                  {/* Status */}
+                  <div className="col-span-12 md:col-span-2">
+                    {getStatusBadge(vehicle.status)}
+                    {vehicle.driver && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        👨‍💼 {vehicle.driver}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Location */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4 text-green-600" />
+                      <span className="text-sm">{vehicle.location}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Maintenance */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className={`text-xs ${
+                      isDocumentExpiringSoon(vehicle.nextMaintenance) ? 'text-orange-600' : 'text-muted-foreground'
+                    }`}>
+                      <Settings className="h-3 w-3 inline mr-1" />
+                      {new Date(vehicle.nextMaintenance).toLocaleDateString()}
+                      {isDocumentExpiringSoon(vehicle.nextMaintenance) && (
+                        <AlertTriangle className="h-3 w-3 inline ml-1 text-orange-500" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="col-span-12 md:col-span-2">
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="sm" onClick={() => handleView(vehicle)}>
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <ProtectedComponent resource="vehicles" action="update">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(vehicle)}>
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </ProtectedComponent>
+                      <ProtectedComponent resource="vehicles" action="delete">
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(vehicle)} className="text-red-600">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </ProtectedComponent>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Modal for Add/Edit */}
       {isModalOpen && (
@@ -474,8 +577,8 @@ export function VehicleManager() {
                       required
                     />
                   </div>
-            <div>
-                    <label className="block text-sm font-medium mb-2 text-card-foreground">Carburant</label>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-card-foreground">Type de carburant</label>
                     <select
                       value={formData.fuelType || 'diesel'}
                       onChange={(e) => setFormData(prev => ({ ...prev, fuelType: e.target.value as Vehicle['fuelType'] }))}
@@ -485,7 +588,7 @@ export function VehicleManager() {
                       <option value="essence">Essence</option>
                       <option value="electrique">Électrique</option>
                     </select>
-            </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-card-foreground">Statut</label>
                     <select
@@ -498,24 +601,66 @@ export function VehicleManager() {
                       <option value="maintenance">Maintenance</option>
                       <option value="hors_service">Hors service</option>
                     </select>
-          </div>
-        </div>
-        
-                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-border">
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-card-foreground">Kilométrage</label>
+                    <input
+                      type="number"
+                      value={formData.mileage || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, mileage: parseInt(e.target.value) }))}
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-card-foreground">Localisation</label>
+                    <input
+                      type="text"
+                      value={formData.location || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-card-foreground">Niveau carburant (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.fuelLevel || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, fuelLevel: parseInt(e.target.value) }))}
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-card-foreground">Prochaine maintenance</label>
+                    <input
+                      type="date"
+                      value={formData.nextMaintenance || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nextMaintenance: e.target.value }))}
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-6 border-t border-border">
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-primary hover:bg-primary/90"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {editingVehicle ? 'Modifier' : 'Ajouter'}
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full sm:w-auto"
+                    className="flex-1"
                   >
                     Annuler
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="w-full sm:w-auto shadow-sm hover:shadow-md"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {editingVehicle ? 'Mettre à jour' : 'Ajouter'}
                   </Button>
                 </div>
               </form>
@@ -530,7 +675,9 @@ export function VehicleManager() {
           <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-card-foreground">Détails du véhicule</h3>
+                <h3 className="text-xl font-semibold text-card-foreground">
+                  Détails du véhicule {viewingVehicle.plateNumber}
+                </h3>
                 <Button
                   variant="outline"
                   size="sm"
@@ -538,88 +685,94 @@ export function VehicleManager() {
                 >
                   <X className="h-4 w-4" />
                 </Button>
-      </div>
+              </div>
 
               <div className="space-y-6">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Truck className="h-10 w-10 text-muted-foreground" />
+                {/* Vehicle Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium text-card-foreground mb-2">Informations générales</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="text-muted-foreground">Marque:</span> {viewingVehicle.brand}</div>
+                      <div><span className="text-muted-foreground">Modèle:</span> {viewingVehicle.model}</div>
+                      <div><span className="text-muted-foreground">Année:</span> {viewingVehicle.year}</div>
+                      <div><span className="text-muted-foreground">Type:</span> {viewingVehicle.type}</div>
+                      <div><span className="text-muted-foreground">Capacité:</span> {viewingVehicle.capacity.toLocaleString()}L</div>
                     </div>
-                  <h4 className="text-xl font-semibold text-card-foreground">
-                    {viewingVehicle.plateNumber}
-                  </h4>
-                  <p className="text-muted-foreground">
-                    {viewingVehicle.brand} {viewingVehicle.model} ({viewingVehicle.year})
-                  </p>
-                  <div className="mt-2">
-                    {getStatusBadge(viewingVehicle.status)}
+                  </div>
+
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium text-card-foreground mb-2">État actuel</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Statut:</span> 
+                        {getStatusBadge(viewingVehicle.status)}
+                      </div>
+                      <div><span className="text-muted-foreground">Localisation:</span> {viewingVehicle.location}</div>
+                      <div><span className="text-muted-foreground">Kilométrage:</span> {viewingVehicle.mileage.toLocaleString()} km</div>
+                      <div><span className="text-muted-foreground">Carburant:</span> {viewingVehicle.fuelLevel}%</div>
+                      {viewingVehicle.driver && (
+                        <div><span className="text-muted-foreground">Chauffeur:</span> {viewingVehicle.driver}</div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-border pt-6">
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground">Type & Capacité</div>
-                    <div className="text-sm text-foreground capitalize">
-                      {viewingVehicle.type} • {viewingVehicle.capacity.toLocaleString()}L
+                {/* Maintenance */}
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium text-card-foreground mb-2">Maintenance</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Dernière maintenance</div>
+                      <div className="text-xl font-semibold text-blue-900 dark:text-blue-100">
+                        {new Date(viewingVehicle.lastMaintenance).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className={`p-3 rounded-lg border ${
+                      isDocumentExpiringSoon(viewingVehicle.nextMaintenance)
+                        ? 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800'
+                        : 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                    }`}>
+                      <div className={`text-sm font-medium ${
+                        isDocumentExpiringSoon(viewingVehicle.nextMaintenance)
+                          ? 'text-orange-700 dark:text-orange-300'
+                          : 'text-green-700 dark:text-green-300'
+                      }`}>
+                        Prochaine maintenance
+                      </div>
+                      <div className={`text-xl font-semibold ${
+                        isDocumentExpiringSoon(viewingVehicle.nextMaintenance)
+                          ? 'text-orange-900 dark:text-orange-100'
+                          : 'text-green-900 dark:text-green-100'
+                      }`}>
+                        {new Date(viewingVehicle.nextMaintenance).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground">Carburant</div>
-                    <div className="text-sm text-foreground capitalize">{viewingVehicle.fuelType}</div>
-                  </div>
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground">Kilométrage</div>
-                    <div className="text-sm text-foreground">{viewingVehicle.mileage.toLocaleString()} km</div>
-                  </div>
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground">Niveau carburant</div>
-                    <div className="text-sm text-foreground">{viewingVehicle.fuelLevel}%</div>
-                    </div>
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground">Localisation</div>
-                    <div className="text-sm text-foreground">{viewingVehicle.location}</div>
-                  </div>
-                  {viewingVehicle.driver && (
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                      <div className="text-sm font-medium text-muted-foreground">Chauffeur</div>
-                      <div className="text-sm text-foreground">{viewingVehicle.driver}</div>
-                    </div>
-                  )}
                 </div>
-                
-                <div className="border-t border-border pt-6">
-                  <h5 className="font-semibold text-card-foreground mb-3">Documents</h5>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
-                      <span className="text-sm text-muted-foreground">Assurance</span>
-                      <span className={`text-sm ${
-                        isDocumentExpiringSoon(viewingVehicle.documents.insurance) 
-                          ? 'text-orange-600 dark:text-orange-400' 
-                          : 'text-foreground'
-                      }`}>
+
+                {/* Documents */}
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium text-card-foreground mb-2">Documents</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <div className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Assurance</div>
+                      <div className="text-sm font-mono text-yellow-900 dark:text-yellow-100">
                         {new Date(viewingVehicle.documents.insurance).toLocaleDateString()}
-                      </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
-                      <span className="text-sm text-muted-foreground">Contrôle technique</span>
-                      <span className={`text-sm ${
-                        isDocumentExpiringSoon(viewingVehicle.documents.inspection) 
-                          ? 'text-orange-600 dark:text-orange-400' 
-                          : 'text-foreground'
-                      }`}>
+                    <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Contrôle technique</div>
+                      <div className="text-sm font-mono text-purple-900 dark:text-purple-100">
                         {new Date(viewingVehicle.documents.inspection).toLocaleDateString()}
-                      </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
-                      <span className="text-sm text-muted-foreground">Carte grise</span>
-                      <span className={`text-sm ${
-                        isDocumentExpiringSoon(viewingVehicle.documents.registration) 
-                          ? 'text-orange-600 dark:text-orange-400' 
-                          : 'text-foreground'
-                      }`}>
+                    <div className="p-3 bg-indigo-50 dark:bg-indigo-950 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                      <div className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Carte grise</div>
+                      <div className="text-sm font-mono text-indigo-900 dark:text-indigo-100">
                         {new Date(viewingVehicle.documents.registration).toLocaleDateString()}
-                      </span>
-                  </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
