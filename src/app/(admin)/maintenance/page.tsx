@@ -1,173 +1,335 @@
 "use client"
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ViewToggle, useViewMode } from '@/components/ui/view-toggle'
-import { useDemoAuth, ProtectedComponent } from '@/components/providers/demo-auth-provider'
-import { Wrench, AlertTriangle, Calendar, Clock, Plus, Filter, Search, User } from 'lucide-react'
+import { ViewToggle, useViewMode, AdaptiveContainer, ListItem, CardItem } from '@/components/ui/view-toggle'
+import { MaintenanceTypeChart, MaintenanceCostChart, MaintenanceDistributionChart, MaintenanceOverviewChart, MaintenanceReliabilityChart } from '@/components/charts/maintenance-charts'
+import { 
+  Wrench, 
+  Calendar, 
+  AlertTriangle, 
+  Clock, 
+  DollarSign,
+  Plus,
+  Search,
+  Filter,
+  TrendingUp,
+  Settings,
+  CheckCircle,
+  Car
+} from 'lucide-react'
 
-interface MaintenanceIntervention {
+interface MaintenanceRecord {
   id: string
   vehicleId: string
   vehiclePlate: string
   type: 'preventive' | 'corrective' | 'emergency'
-  title: string
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
   description: string
-  priority: 'low' | 'medium' | 'high' | 'critical'
-  status: 'planned' | 'in_progress' | 'completed' | 'cancelled'
   scheduledDate: string
   completedDate?: string
+  cost: number
   technician: string
-  estimatedCost: number
-  actualCost?: number
-  partsCost: number
-  laborCost: number
-  mileage: number
+  priority: 'low' | 'medium' | 'high'
+  estimatedDuration: number
 }
 
-const mockInterventions: MaintenanceIntervention[] = [
+const mockMaintenanceRecords: MaintenanceRecord[] = [
   {
     id: '1',
     vehicleId: 'v1',
-    vehiclePlate: 'TC-001-FR',
+    vehiclePlate: 'AB-123-CD',
     type: 'preventive',
-    title: 'Vidange moteur + filtres',
-    description: 'Vidange huile moteur, remplacement filtres à huile et à air',
+    status: 'scheduled',
+    description: 'Révision générale 15 000 km',
+    scheduledDate: '2024-03-20',
+    cost: 1200,
+    technician: 'Michel Durand',
     priority: 'medium',
-    status: 'completed',
-    scheduledDate: '2024-03-10',
-    completedDate: '2024-03-10',
-    technician: 'Lucas Moreau',
-    estimatedCost: 450,
-    actualCost: 485,
-    partsCost: 120,
-    laborCost: 365,
-    mileage: 85000
+    estimatedDuration: 4
   },
   {
     id: '2',
     vehicleId: 'v2',
-    vehiclePlate: 'TC-002-FR',
+    vehiclePlate: 'EF-456-GH',
     type: 'corrective',
-    title: 'Réparation système freinage',
-    description: 'Remplacement plaquettes et disques de frein avant',
-    priority: 'high',
     status: 'in_progress',
-    scheduledDate: '2024-03-15',
-    technician: 'Pierre Duval',
-    estimatedCost: 1200,
-    partsCost: 750,
-    laborCost: 450,
-    mileage: 142000
+    description: 'Réparation système de freinage',
+    scheduledDate: '2024-03-18',
+    cost: 850,
+    technician: 'Pierre Martin',
+    priority: 'high',
+    estimatedDuration: 6
   },
   {
     id: '3',
     vehicleId: 'v3',
-    vehiclePlate: 'TC-003-FR',
+    vehiclePlate: 'IJ-789-KL',
     type: 'emergency',
-    title: 'Panne moteur - diagnostic',
-    description: 'Diagnostic complet suite à perte de puissance',
-    priority: 'critical',
-    status: 'planned',
-    scheduledDate: '2024-03-18',
-    technician: 'Antoine Bernard',
-    estimatedCost: 800,
-    partsCost: 0,
-    laborCost: 800,
-    mileage: 95000
+    status: 'completed',
+    description: 'Panne moteur - Remplacement turbo',
+    scheduledDate: '2024-03-15',
+    completedDate: '2024-03-16',
+    cost: 2500,
+    technician: 'Jean Leblanc',
+    priority: 'high',
+    estimatedDuration: 8
+  },
+  {
+    id: '4',
+    vehicleId: 'v4',
+    vehiclePlate: 'MN-012-OP',
+    type: 'preventive',
+    status: 'scheduled',
+    description: 'Changement d\'huile et filtres',
+    scheduledDate: '2024-03-22',
+    cost: 300,
+    technician: 'Sophie Bernard',
+    priority: 'low',
+    estimatedDuration: 2
+  },
+  {
+    id: '5',
+    vehicleId: 'v5',
+    vehiclePlate: 'QR-345-ST',
+    type: 'corrective',
+    status: 'completed',
+    description: 'Réparation système électrique',
+    scheduledDate: '2024-03-12',
+    completedDate: '2024-03-13',
+    cost: 650,
+    technician: 'Antoine Leroy',
+    priority: 'medium',
+    estimatedDuration: 5
   }
 ]
 
 export default function MaintenancePage() {
-  const { hasPermission } = useDemoAuth()
-  const [interventions] = useState<MaintenanceIntervention[]>(mockInterventions)
+  const { viewMode, setViewMode } = useViewMode('card')
+  const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const { viewMode, setViewMode, isCardView, isListView } = useViewMode('card')
+  const [records] = useState<MaintenanceRecord[]>(mockMaintenanceRecords)
 
-  const filteredInterventions = interventions.filter(intervention => {
-    const statusMatch = statusFilter === 'all' || intervention.status === statusFilter
-    const typeMatch = typeFilter === 'all' || intervention.type === typeFilter
-    const searchMatch = intervention.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       intervention.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       intervention.technician.toLowerCase().includes(searchTerm.toLowerCase())
-    return statusMatch && typeMatch && searchMatch
+  // Filtrer les enregistrements
+  const filteredRecords = records.filter(record => {
+    const matchesSearch = record.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.technician.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || record.status === statusFilter
+    const matchesType = typeFilter === 'all' || record.type === typeFilter
+    return matchesSearch && matchesStatus && matchesType
   })
 
-  const getStatusBadge = (status: MaintenanceIntervention['status']) => {
-    const statusConfig = {
-      planned: { label: 'Planifiée', className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
-      in_progress: { label: 'En cours', className: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
-      completed: { label: 'Terminée', className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
-      cancelled: { label: 'Annulée', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
-    }
-    
-    const config = statusConfig[status]
-    return <Badge className={config.className}>{config.label}</Badge>
+  // Calculer les statistiques
+  const stats = {
+    total: records.length,
+    scheduled: records.filter(r => r.status === 'scheduled').length,
+    inProgress: records.filter(r => r.status === 'in_progress').length,
+    completed: records.filter(r => r.status === 'completed').length,
+    totalCost: records.reduce((sum, r) => sum + r.cost, 0),
+    avgCost: records.length > 0 ? records.reduce((sum, r) => sum + r.cost, 0) / records.length : 0,
+    preventive: records.filter(r => r.type === 'preventive').length,
+    corrective: records.filter(r => r.type === 'corrective').length
   }
 
-  const getPriorityBadge = (priority: MaintenanceIntervention['priority']) => {
-    const priorityConfig = {
-      low: { label: 'Basse', className: 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300' },
-      medium: { label: 'Moyenne', className: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' },
-      high: { label: 'Haute', className: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
-      critical: { label: 'Critique', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+  // Fonctions utilitaires
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'preventive': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'
+      case 'corrective': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800'
+      case 'emergency': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
     }
-    
-    const config = priorityConfig[priority]
-    return <Badge variant="outline" className={config.className}>{config.label}</Badge>
   }
 
-  const getTypeBadge = (type: MaintenanceIntervention['type']) => {
-    const typeConfig = {
-      preventive: { label: 'Préventive', className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
-      corrective: { label: 'Corrective', className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
-      emergency: { label: 'Urgence', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' }
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+      case 'in_progress': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800'
+      case 'completed': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
     }
-    
-    const config = typeConfig[type]
-    return <Badge className={config.className}>{config.label}</Badge>
   }
 
-  const maintenanceStats = {
-    total: interventions.length,
-    inProgress: interventions.filter(i => i.status === 'in_progress').length,
-    planned: interventions.filter(i => i.status === 'planned').length,
-    completed: interventions.filter(i => i.status === 'completed').length,
-    critical: interventions.filter(i => i.priority === 'critical').length,
-    totalCost: interventions.reduce((sum, i) => sum + (i.actualCost || i.estimatedCost), 0)
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
+    }
+  }
+
+  // Composant pour afficher un enregistrement de maintenance
+  const MaintenanceRecordItem = ({ record }: { record: MaintenanceRecord }) => {
+    if (viewMode === 'list') {
+      return (
+        <ListItem>
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Wrench className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">{record.vehiclePlate}</p>
+                <p className="text-sm text-muted-foreground">{record.description}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Badge className={`${getTypeColor(record.type)} border text-xs`}>
+                {record.type === 'preventive' ? 'Préventive' : 
+                 record.type === 'corrective' ? 'Corrective' : 'Urgence'}
+              </Badge>
+              <Badge className={`${getStatusColor(record.status)} border text-xs`}>
+                {record.status === 'scheduled' ? 'Planifiée' :
+                 record.status === 'in_progress' ? 'En cours' :
+                 record.status === 'completed' ? 'Terminée' : 'Annulée'}
+              </Badge>
+              <Badge className={getPriorityColor(record.priority)}>
+                {record.priority === 'high' ? 'Haute' :
+                 record.priority === 'medium' ? 'Moyenne' : 'Basse'}
+              </Badge>
+            </div>
+
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {new Date(record.scheduledDate).toLocaleDateString('fr-FR')}
+              </div>
+              <div className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4" />
+                {record.cost.toLocaleString()}€
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {record.estimatedDuration}h
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </ListItem>
+      )
+    }
+
+    return (
+      <CardItem compact={viewMode === 'grid'}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Wrench className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">{record.vehiclePlate}</h3>
+              {viewMode !== 'grid' && (
+                <p className="text-sm text-muted-foreground">{record.technician}</p>
+              )}
+            </div>
+          </div>
+          
+          <Badge className={`${getStatusColor(record.status)} border`}>
+            {record.status === 'scheduled' ? 'Planifiée' :
+             record.status === 'in_progress' ? 'En cours' :
+             record.status === 'completed' ? 'Terminée' : 'Annulée'}
+          </Badge>
+        </div>
+
+        {viewMode !== 'grid' && (
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground mb-2">{record.description}</p>
+            <div className="flex items-center gap-2">
+              <Badge className={`${getTypeColor(record.type)} border text-xs`}>
+                {record.type === 'preventive' ? 'Préventive' : 
+                 record.type === 'corrective' ? 'Corrective' : 'Urgence'}
+              </Badge>
+              <Badge className={getPriorityColor(record.priority)}>
+                {record.priority === 'high' ? 'Haute' :
+                 record.priority === 'medium' ? 'Moyenne' : 'Basse'}
+              </Badge>
+            </div>
+          </div>
+        )}
+
+        {viewMode !== 'grid' && (
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Date prévue</span>
+              <span className="font-medium">{new Date(record.scheduledDate).toLocaleDateString('fr-FR')}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Coût</span>
+              <span className="font-medium">{record.cost.toLocaleString()}€</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Durée estimée</span>
+              <span className="font-medium">{record.estimatedDuration}h</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 pt-2 border-t border-border">
+          <Button variant="outline" size="sm" className="flex-1">
+            <Settings className="h-4 w-4 mr-2" />
+            {viewMode === 'grid' ? '' : 'Gérer'}
+          </Button>
+        </div>
+      </CardItem>
+    )
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Interventions de Maintenance</h1>
-          <p className="text-muted-foreground">
-            Gérez toutes les interventions de maintenance de votre flotte
-          </p>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Gestion de la Maintenance</h1>
+            <p className="text-muted-foreground">
+              Planifiez et suivez toutes les interventions de maintenance de votre flotte
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <ViewToggle
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showGrid={true}
+            />
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Planifier maintenance
+            </Button>
+          </div>
         </div>
-        <ProtectedComponent resource="maintenance" action="create">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvelle intervention
-          </Button>
-        </ProtectedComponent>
-      </div>
+      </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      {/* Statistiques */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"
+      >
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Wrench className="h-8 w-8 text-blue-600" />
+              <Wrench className="h-8 w-8 text-primary" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold text-foreground">{maintenanceStats.total}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
               </div>
             </div>
           </CardContent>
@@ -176,22 +338,10 @@ export default function MaintenancePage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Clock className="h-8 w-8 text-orange-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">En cours</p>
-                <p className="text-2xl font-bold text-foreground">{maintenanceStats.inProgress}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
               <Calendar className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Planifiées</p>
-                <p className="text-2xl font-bold text-foreground">{maintenanceStats.planned}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.scheduled}</p>
               </div>
             </div>
           </CardContent>
@@ -200,256 +350,189 @@ export default function MaintenancePage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <Clock className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Critiques</p>
-                <p className="text-2xl font-bold text-foreground">{maintenanceStats.critical}</p>
+                <p className="text-sm font-medium text-muted-foreground">En cours</p>
+                <p className="text-2xl font-bold text-foreground">{stats.inProgress}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <span className="text-purple-600 font-bold">€</span>
-              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Coût total</p>
-                <p className="text-2xl font-bold text-foreground">{maintenanceStats.totalCost.toLocaleString()} €</p>
+                <p className="text-sm font-medium text-muted-foreground">Terminées</p>
+                <p className="text-2xl font-bold text-foreground">{stats.completed}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Filters and View Toggle */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="relative flex-1">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <DollarSign className="h-8 w-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Coût total</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalCost.toLocaleString()}€</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <TrendingUp className="h-8 w-8 text-indigo-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Coût moyen</p>
+                <p className="text-2xl font-bold text-foreground">{Math.round(stats.avgCost).toLocaleString()}€</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Car className="h-8 w-8 text-teal-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Ratio P/C</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats.corrective > 0 ? (stats.preventive / stats.corrective).toFixed(1) : '∞'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Graphiques */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+      >
+        <MaintenanceTypeChart />
+        <MaintenanceCostChart />
+        <MaintenanceDistributionChart />
+        <MaintenanceOverviewChart />
+        <MaintenanceReliabilityChart />
+      </motion.div>
+
+      {/* Filtres et recherche */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="flex flex-col lg:flex-row gap-4"
+      >
+        <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Rechercher une intervention..."
+            placeholder="Rechercher par description, véhicule ou technicien..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-        >
-          <option value="all">Tous les statuts</option>
-          <option value="planned">Planifiées</option>
-          <option value="in_progress">En cours</option>
-          <option value="completed">Terminées</option>
-          <option value="cancelled">Annulées</option>
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-        >
-          <option value="all">Tous les types</option>
-          <option value="preventive">Préventive</option>
-          <option value="corrective">Corrective</option>
-          <option value="emergency">Urgence</option>
-        </select>
-        <ViewToggle 
-          viewMode={viewMode} 
-          onViewModeChange={setViewMode}
-        />
-      </div>
-
-      {/* Interventions Display */}
-      {isCardView ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredInterventions.map((intervention) => (
-            <Card key={intervention.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-start justify-between pb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CardTitle className="text-lg">{intervention.title}</CardTitle>
-                    {getTypeBadge(intervention.type)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {intervention.vehiclePlate} • {intervention.mileage.toLocaleString()} km
-                  </p>
-                </div>
-                <div className="flex flex-col gap-1">
-                  {getStatusBadge(intervention.status)}
-                  {getPriorityBadge(intervention.priority)}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Description */}
-                <p className="text-sm text-muted-foreground">{intervention.description}</p>
-
-                {/* Schedule and Technician */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Date prévue</p>
-                    <p className="font-medium">{new Date(intervention.scheduledDate).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Technicien</p>
-                    <p className="font-medium">{intervention.technician}</p>
-                  </div>
-                </div>
-
-                {/* Costs */}
-                <div className="p-3 bg-muted/50 rounded-lg">
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Pièces</p>
-                      <p className="font-medium">{intervention.partsCost} €</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Main d&apos;œuvre</p>
-                      <p className="font-medium">{intervention.laborCost} €</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Total</p>
-                      <p className="font-semibold text-lg">
-                        {(intervention.actualCost || intervention.estimatedCost)} €
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Completion Date */}
-                {intervention.completedDate && (
-                  <div className="text-sm">
-                    <p className="text-muted-foreground">Terminée le</p>
-                    <p className="font-medium">{new Date(intervention.completedDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <ProtectedComponent resource="maintenance" action="update">
-                  <div className="flex gap-2 pt-3 border-t">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      Voir détails
-                    </Button>
-                    {intervention.status === 'planned' && (
-                      <Button size="sm" className="flex-1">
-                        Démarrer
-                      </Button>
-                    )}
-                    {intervention.status === 'in_progress' && (
-                      <Button size="sm" className="flex-1">
-                        Terminer
-                      </Button>
-                    )}
-                  </div>
-                </ProtectedComponent>
-              </CardContent>
-            </Card>
-          ))}
+        
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-muted-foreground">Statut:</span>
+            <Button
+              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('all')}
+            >
+              Tous
+            </Button>
+            <Button
+              variant={statusFilter === 'scheduled' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('scheduled')}
+            >
+              Planifiées
+            </Button>
+            <Button
+              variant={statusFilter === 'in_progress' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('in_progress')}
+            >
+              En cours
+            </Button>
+            <Button
+              variant={statusFilter === 'completed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('completed')}
+            >
+              Terminées
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-muted-foreground">Type:</span>
+            <Button
+              variant={typeFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('all')}
+            >
+              Tous
+            </Button>
+            <Button
+              variant={typeFilter === 'preventive' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('preventive')}
+            >
+              Préventive
+            </Button>
+            <Button
+              variant={typeFilter === 'corrective' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('corrective')}
+            >
+              Corrective
+            </Button>
+          </div>
         </div>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Liste des Interventions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Table Header */}
-              <div className="hidden md:grid grid-cols-12 gap-4 p-3 bg-muted/50 rounded-lg text-sm font-medium text-muted-foreground">
-                <div className="col-span-3">Intervention</div>
-                <div className="col-span-2">Véhicule</div>
-                <div className="col-span-2">Technicien</div>
-                <div className="col-span-2">Date</div>
-                <div className="col-span-2">Coût</div>
-                <div className="col-span-1">Actions</div>
-              </div>
-              
-              {/* Table Rows */}
-              {filteredInterventions.map((intervention) => (
-                <div key={intervention.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
-                  {/* Intervention Info */}
-                  <div className="col-span-12 md:col-span-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-foreground">{intervention.title}</h3>
-                      {getTypeBadge(intervention.type)}
-                    </div>
-                    <div className="flex items-center gap-1 mb-1">
-                      {getStatusBadge(intervention.status)}
-                      {getPriorityBadge(intervention.priority)}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{intervention.description}</p>
-                  </div>
-                  
-                  {/* Vehicle */}
-                  <div className="col-span-12 md:col-span-2">
-                    <div className="flex items-center gap-1 mb-1">
-                      <Wrench className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium">{intervention.vehiclePlate}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {intervention.mileage.toLocaleString()} km
-                    </div>
-                  </div>
-                  
-                  {/* Technician */}
-                  <div className="col-span-12 md:col-span-2">
-                    <div className="flex items-center gap-1">
-                      <User className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">{intervention.technician}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Date */}
-                  <div className="col-span-12 md:col-span-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{new Date(intervention.scheduledDate).toLocaleDateString()}</span>
-                    </div>
-                    {intervention.completedDate && (
-                      <div className="text-xs text-green-600">
-                        Terminée: {new Date(intervention.completedDate).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Cost */}
-                  <div className="col-span-12 md:col-span-2">
-                    <div className="text-sm font-medium">
-                      {(intervention.actualCost || intervention.estimatedCost)} €
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Pièces: {intervention.partsCost}€ • MO: {intervention.laborCost}€
-                    </div>
-                  </div>
-                  
-                  {/* Actions */}
-                  <div className="col-span-12 md:col-span-1">
-                    <ProtectedComponent resource="maintenance" action="update">
-                      <div className="flex gap-1">
-                        <Button variant="outline" size="sm">
-                          Voir
-                        </Button>
-                        {intervention.status === 'planned' && (
-                          <Button size="sm">
-                            Start
-                          </Button>
-                        )}
-                        {intervention.status === 'in_progress' && (
-                          <Button size="sm">
-                            End
-                          </Button>
-                        )}
-                      </div>
-                    </ProtectedComponent>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      </motion.div>
+
+      {/* Liste des maintenances */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
+      >
+        {filteredRecords.length === 0 ? (
+          <div className="text-center py-12">
+            <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+              Aucune maintenance trouvée
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Essayez de modifier vos critères de recherche ou de planifier une nouvelle maintenance.
+            </p>
+          </div>
+        ) : (
+          <AdaptiveContainer viewMode={viewMode}>
+            {filteredRecords.map((record, index) => (
+              <motion.div
+                key={record.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <MaintenanceRecordItem record={record} />
+              </motion.div>
+            ))}
+          </AdaptiveContainer>
+        )}
+      </motion.div>
     </div>
   )
 } 
