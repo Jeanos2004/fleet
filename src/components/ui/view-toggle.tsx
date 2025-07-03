@@ -65,9 +65,8 @@ export function ListItem({ children, className = '', onClick }: ListItemProps) {
   return (
     <div 
       className={`
-        flex items-center justify-between p-4 bg-background border border-border rounded-lg
-        hover:bg-muted/50 transition-all duration-200 cursor-pointer
-        dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700/50
+        flex items-center justify-between p-4 bg-card border border-border rounded-lg
+        hover:bg-accent/50 transition-all duration-200 cursor-pointer
         ${className}
       `}
       onClick={onClick}
@@ -88,10 +87,9 @@ export function CardItem({ children, className = '', onClick }: CardItemProps) {
   return (
     <div 
       className={`
-        p-6 bg-background border border-border rounded-xl
+        p-6 bg-card border border-border rounded-xl
         hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer
-        dark:bg-slate-800 dark:border-slate-700 dark:hover:border-blue-500/30
-        dark:hover:shadow-blue-500/10
+        hover:bg-accent/20
         ${className}
       `}
       onClick={onClick}

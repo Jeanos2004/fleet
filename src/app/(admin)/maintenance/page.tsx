@@ -288,7 +288,7 @@ export default function MaintenancePage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 m-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -420,8 +420,8 @@ export default function MaintenancePage() {
         <MaintenanceTypeChart />
         <MaintenanceCostChart />
         <MaintenanceDistributionChart />
-        <MaintenanceOverviewChart />
-        <MaintenanceReliabilityChart />
+        {/* <MaintenanceOverviewChart />
+        <MaintenanceReliabilityChart /> */}
       </motion.div>
 
       {/* Filtres et recherche */}

@@ -43,18 +43,18 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
   const getStatusColor = (statut: string) => {
     switch (statut?.toLowerCase()) {
       case 'disponible':
-        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'
+        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-200 dark:border-green-700'
       case 'en_mission':
       case 'en_route':
-        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-700'
       case 'maintenance':
       case 'en_maintenance':
-        return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800'
+        return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-200 dark:border-orange-700'
       case 'panne':
       case 'hors_service':
-        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'
+        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-200 dark:border-red-700'
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/30 dark:text-gray-200 dark:border-gray-700'
     }
   }
 
@@ -139,7 +139,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
               e.stopPropagation()
               onView?.(vehicle)
             }}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-muted"
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -150,7 +150,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
               e.stopPropagation()
               onEdit?.(vehicle)
             }}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-muted"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -193,7 +193,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
               <Fuel className="h-4 w-4" />
               Capacité
             </div>
-            <span className="font-medium">{vehicle.capacite.toLocaleString()}L</span>
+            <span className="font-medium text-foreground">{vehicle.capacite.toLocaleString()}L</span>
           </div>
         )}
         
@@ -203,7 +203,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
               <Gauge className="h-4 w-4" />
               Kilométrage
             </div>
-            <span className="font-medium">{vehicle.kilometrage.toLocaleString()}km</span>
+            <span className="font-medium text-foreground">{vehicle.kilometrage.toLocaleString()}km</span>
           </div>
         )}
         
@@ -213,7 +213,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
               <Calendar className="h-4 w-4" />
               Prochaine maintenance
             </div>
-            <span className="font-medium">{formatDate(vehicle.prochaineMaintenance)}</span>
+            <span className="font-medium text-foreground">{formatDate(vehicle.prochaineMaintenance)}</span>
           </div>
         )}
       </div>
@@ -227,7 +227,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
             e.stopPropagation()
             onView?.(vehicle)
           }}
-          className="flex-1"
+          className="flex-1 hover:bg-muted"
         >
           <Eye className="h-4 w-4 mr-2" />
           Voir
@@ -239,7 +239,7 @@ export function VehicleItem({ vehicle, viewMode, onEdit, onView, className = '' 
             e.stopPropagation()
             onEdit?.(vehicle)
           }}
-          className="flex-1"
+          className="flex-1 hover:bg-muted"
         >
           <Edit className="h-4 w-4 mr-2" />
           Modifier
