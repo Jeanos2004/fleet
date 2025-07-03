@@ -29,9 +29,18 @@ interface Mission {
   dateFin?: string | Date
   distance?: number
   quantite?: number
-  destination?: string
+  destination: string
   client?: string
   urgente?: boolean
+  // Propriétés additionnelles pour compatibilité avec missions/page.tsx
+  title: string
+  vehicleId: string
+  vehiclePlate: string
+  driverId: string
+  driverName: string
+  origin: string
+  cargo: string
+  priority: 'low' | 'medium' | 'high'
 }
 
 interface MissionItemProps {
@@ -227,13 +236,13 @@ export function MissionItem({ mission, viewMode, onEdit, onView, onStart, classN
   }
 
   // Affichage en mode carte ou grille
-  const isCompact = viewMode === 'grid'
+  const isCompact = viewMode === 'card'
   
   return (
     <CardItem 
       className={`${className} ${mission.urgente ? 'ring-2 ring-red-200 dark:ring-red-800' : ''}`}
       onClick={() => onView?.(mission)}
-      compact={isCompact}
+
     >
       {/* Header de la carte */}
       <div className="flex items-center justify-between mb-4">

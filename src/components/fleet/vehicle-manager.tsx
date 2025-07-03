@@ -21,16 +21,17 @@ import {
 } from 'lucide-react'
 
 // Types pour les véhicules
+// Interface Vehicle compatible avec UIVehicle
 interface Vehicle {
   id: string
   immatriculation: string
   modele: string
-  type: string
-  statut: 'disponible' | 'en_mission' | 'maintenance' | 'panne'
-  capacite: number
-  kilometrage: number
-  derniereMaintenance: string
-  prochaineMaintenance: string
+  type?: string // Optionnel pour compatibilité
+  statut: string
+  capacite?: number
+  kilometrage?: number
+  derniereMaintenance?: string
+  prochaineMaintenance?: string
   chauffeurId?: string | null
   annee?: number
 }
@@ -118,7 +119,7 @@ const mockVehicles: Vehicle[] = [
 ]
 
 export function VehicleManager() {
-  const { hasPermission, isListView, setViewMode } = useDemoAuth()
+  const { hasPermission } = useDemoAuth()
   const { viewMode, setViewMode: setToggleViewMode } = useViewMode('card')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -143,6 +144,7 @@ export function VehicleManager() {
 
   // Véhicules nécessitant une attention
   const maintenanceDue = vehicles.filter(v => {
+    if (!v.prochaineMaintenance) return false
     const nextMaintenance = new Date(v.prochaineMaintenance)
     const warningDate = new Date()
     warningDate.setDate(warningDate.getDate() + 14) // 14 jours
@@ -276,10 +278,10 @@ export function VehicleManager() {
         transition={{ duration: 0.3, delay: 0.25 }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6"
       >
-        <FleetStatusChart vehicles={vehicles} />
-        <FleetMileageChart vehicles={vehicles} />
-        <FleetCapacityChart vehicles={vehicles} />
-        <FleetAgeChart vehicles={vehicles} />
+        <FleetStatusChart vehicles={vehicles as any} />
+        <FleetMileageChart vehicles={vehicles as any} />
+        <FleetCapacityChart vehicles={vehicles as any} />
+        <FleetAgeChart vehicles={vehicles as any} />
       </motion.div>
 
       {/* Filtres et recherche avec ViewToggle */}

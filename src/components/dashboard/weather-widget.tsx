@@ -232,7 +232,7 @@ export function WeatherWidget() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{alert.message}</p>
                     <div className="mt-1">
-                      <Badge size="sm" variant={getAlertColor(alert.severity)}>
+                      <Badge variant={getAlertColor(alert.severity)}>
                         {alert.type === 'warning' ? 'Alerte' :
                          alert.type === 'watch' ? 'Surveillance' : 'Avis'}
                       </Badge>

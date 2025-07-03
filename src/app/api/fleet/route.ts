@@ -1,38 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { mockData } from '@/lib/db/mock-data'
+import { StatutCamion } from '@/types'
 
 // GET - Récupérer tous les véhicules
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
-    const type = searchParams.get('type')
+    const typeFilter = searchParams.get('type')
     
-    let vehicles = mockData.camions
+    let vehicles = [...mockData.camions]
     
-    // Filtrer par statut si spécifié
+    // Filtrer par statut
     if (status) {
-      vehicles = vehicles.filter(v => v.statut === status)
+      vehicles = vehicles.filter(v => v.statut.toString() === status.toUpperCase())
     }
     
-    // Filtrer par type si spécifié
-    if (type) {
-      vehicles = vehicles.filter(v => v.type === type)
+    // Filtrer par type si fourni
+    if (typeFilter) {
+      vehicles = vehicles.filter(v => v.type === typeFilter)
     }
+    
+    // Enrichir avec des données supplémentaires
+    const enrichedVehicles = vehicles.map(vehicle => ({
+      ...vehicle,
+      capacite: vehicle.capaciteCiterne, // Alias pour compatibilité
+      kilometrage: vehicle.odometre, // Alias pour compatibilité
+      driver: vehicle.chauffeurId ? 
+        mockData.chauffeurs.find(c => c.id === vehicle.chauffeurId) : null,
+      activeMissions: mockData.missions.filter(m => 
+        m.camionId === vehicle.id && 
+        m.statut.toString().includes('EN_COURS')
+      ).length
+    }))
     
     return NextResponse.json({
       success: true,
-      data: vehicles,
-      total: vehicles.length,
-      timestamp: new Date().toISOString()
+      data: enrichedVehicles,
+      count: enrichedVehicles.length
     })
   } catch (error) {
-    console.error('Erreur lors de la récupération des véhicules:', error)
+    console.error('Erreur lors de la récupération de la flotte:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erreur lors de la récupération des véhicules' 
-      },
+      { success: false, error: 'Erreur serveur' },
       { status: 500 }
     )
   }
@@ -44,35 +54,43 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Validation basique
-    if (!body.immatriculation || !body.modele || !body.type) {
+    if (!body.immatriculation || !body.marque || !body.modele) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Données manquantes: immatriculation, modele et type sont requis' 
-        },
+        { success: false, error: 'Données manquantes' },
         { status: 400 }
       )
     }
     
-    // Générer un nouvel ID
-    const newId = `V${Date.now()}`
-    
-    const newVehicle = {
-      id: newId,
-      immatriculation: body.immatriculation,
-      modele: body.modele,
-      type: body.type,
-      statut: body.statut || 'disponible',
-      capacite: body.capacite || 0,
-      kilometrage: body.kilometrage || 0,
-      derniereMaintenance: body.derniereMaintenance || new Date().toISOString().split('T')[0],
-      prochaineMaintenance: body.prochaineMaintenance || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      chauffeurId: body.chauffeurId || null,
-      annee: body.annee || new Date().getFullYear(),
-      createdAt: new Date().toISOString()
+    // Vérifier l'unicité de l'immatriculation
+    const existingVehicle = mockData.camions.find(v => v.immatriculation === body.immatriculation)
+    if (existingVehicle) {
+      return NextResponse.json(
+        { success: false, error: 'Un véhicule avec cette immatriculation existe déjà' },
+        { status: 409 }
+      )
     }
     
-    // Ajouter à la base de données mock (en réalité, ça serait persisté)
+    // Créer un nouveau véhicule
+    const newVehicle = {
+      id: Date.now().toString(),
+      immatriculation: body.immatriculation,
+      marque: body.marque,
+      modele: body.modele,
+      type: body.type,
+      annee: body.annee,
+      capaciteCiterne: body.capaciteCiterne || body.capacite || 35000,
+      capacite: body.capacite || body.capaciteCiterne || 35000,
+      odometre: body.odometre || body.kilometrage || 0,
+      kilometrage: body.kilometrage || body.odometre || 0,
+      statut: body.statut ? StatutCamion[body.statut.toUpperCase() as keyof typeof StatutCamion] : StatutCamion.DISPONIBLE,
+      prochaineMaintenance: body.prochaineMaintenance ? new Date(body.prochaineMaintenance) : new Date(),
+      derniereMaintenance: body.derniereMaintenance ? new Date(body.derniereMaintenance) : undefined,
+      chauffeurId: body.chauffeurId || null,
+      disponible: body.disponible !== undefined ? body.disponible : true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+    
     mockData.camions.push(newVehicle)
     
     return NextResponse.json({
@@ -80,14 +98,10 @@ export async function POST(request: NextRequest) {
       data: newVehicle,
       message: 'Véhicule créé avec succès'
     }, { status: 201 })
-    
   } catch (error) {
     console.error('Erreur lors de la création du véhicule:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erreur lors de la création du véhicule' 
-      },
+      { success: false, error: 'Erreur serveur' },
       { status: 500 }
     )
   }
@@ -96,51 +110,50 @@ export async function POST(request: NextRequest) {
 // PUT - Mettre à jour un véhicule
 export async function PUT(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
     const body = await request.json()
-    const { id, ...updateData } = body
     
     if (!id) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'ID du véhicule requis' 
-        },
+        { success: false, error: 'ID manquant' },
         { status: 400 }
       )
     }
     
     const vehicleIndex = mockData.camions.findIndex(v => v.id === id)
-    
     if (vehicleIndex === -1) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Véhicule non trouvé' 
-        },
+        { success: false, error: 'Véhicule non trouvé' },
         { status: 404 }
       )
     }
     
-    // Mettre à jour le véhicule
-    mockData.camions[vehicleIndex] = {
+    // Mise à jour avec gestion des alias
+    const updatedVehicle = {
       ...mockData.camions[vehicleIndex],
-      ...updateData,
-      updatedAt: new Date().toISOString()
+      ...body,
+      id, // S'assurer que l'ID ne change pas
+      capaciteCiterne: body.capaciteCiterne || body.capacite || mockData.camions[vehicleIndex].capaciteCiterne,
+      odometre: body.odometre || body.kilometrage || mockData.camions[vehicleIndex].odometre,
+      updatedAt: new Date()
     }
+    
+    // Gérer les alias pour compatibilité
+    updatedVehicle.capacite = updatedVehicle.capaciteCiterne
+    updatedVehicle.kilometrage = updatedVehicle.odometre
+    
+    mockData.camions[vehicleIndex] = updatedVehicle
     
     return NextResponse.json({
       success: true,
-      data: mockData.camions[vehicleIndex],
+      data: updatedVehicle,
       message: 'Véhicule mis à jour avec succès'
     })
-    
   } catch (error) {
     console.error('Erreur lors de la mise à jour du véhicule:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erreur lors de la mise à jour du véhicule' 
-      },
+      { success: false, error: 'Erreur serveur' },
       { status: 500 }
     )
   }
@@ -154,42 +167,42 @@ export async function DELETE(request: NextRequest) {
     
     if (!id) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'ID du véhicule requis' 
-        },
+        { success: false, error: 'ID manquant' },
         { status: 400 }
       )
     }
     
     const vehicleIndex = mockData.camions.findIndex(v => v.id === id)
-    
     if (vehicleIndex === -1) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Véhicule non trouvé' 
-        },
+        { success: false, error: 'Véhicule non trouvé' },
         { status: 404 }
       )
     }
     
+    // Vérifier s'il y a des missions actives
+    const activeMissions = mockData.missions.filter(m => 
+      m.camionId === id && m.statut.toString().includes('EN_COURS')
+    )
+    
+    if (activeMissions.length > 0) {
+      return NextResponse.json(
+        { success: false, error: 'Impossible de supprimer: missions actives en cours' },
+        { status: 409 }
+      )
+    }
+    
     // Supprimer le véhicule
-    const deletedVehicle = mockData.camions.splice(vehicleIndex, 1)[0]
+    mockData.camions.splice(vehicleIndex, 1)
     
     return NextResponse.json({
       success: true,
-      data: deletedVehicle,
       message: 'Véhicule supprimé avec succès'
     })
-    
   } catch (error) {
     console.error('Erreur lors de la suppression du véhicule:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erreur lors de la suppression du véhicule' 
-      },
+      { success: false, error: 'Erreur serveur' },
       { status: 500 }
     )
   }

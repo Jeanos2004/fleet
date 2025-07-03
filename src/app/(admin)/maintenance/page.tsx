@@ -223,7 +223,7 @@ export default function MaintenancePage() {
     }
 
     return (
-      <CardItem compact={viewMode === 'grid'}>
+      <CardItem>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -231,7 +231,7 @@ export default function MaintenancePage() {
             </div>
             <div>
               <h3 className="font-semibold text-foreground">{record.vehiclePlate}</h3>
-              {viewMode !== 'grid' && (
+              {viewMode !== 'card' && (
                 <p className="text-sm text-muted-foreground">{record.technician}</p>
               )}
             </div>
@@ -244,7 +244,7 @@ export default function MaintenancePage() {
           </Badge>
         </div>
 
-        {viewMode !== 'grid' && (
+        {viewMode !== 'card' && (
           <div className="mb-4">
             <p className="text-sm text-muted-foreground mb-2">{record.description}</p>
             <div className="flex items-center gap-2">
@@ -260,7 +260,7 @@ export default function MaintenancePage() {
           </div>
         )}
 
-        {viewMode !== 'grid' && (
+        {viewMode !== 'card' && (
           <div className="space-y-2 mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Date prévue</span>
@@ -280,7 +280,7 @@ export default function MaintenancePage() {
         <div className="flex items-center gap-2 pt-2 border-t border-border">
           <Button variant="outline" size="sm" className="flex-1">
             <Settings className="h-4 w-4 mr-2" />
-            {viewMode === 'grid' ? '' : 'Gérer'}
+            {viewMode === 'card' ? '' : 'Gérer'}
           </Button>
         </div>
       </CardItem>
@@ -306,7 +306,7 @@ export default function MaintenancePage() {
             <ViewToggle
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              showGrid={true}
+
             />
             <Button className="gap-2">
               <Plus className="h-4 w-4" />

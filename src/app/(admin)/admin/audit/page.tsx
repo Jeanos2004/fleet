@@ -23,6 +23,14 @@ import {
   Clock,
   RefreshCw
 } from 'lucide-react'
+// Fonction utilitaire pour formater les dates
+const formatDate = (date: Date | string | undefined): string => {
+  if (!date) return 'N/A'
+  if (typeof date === 'string') {
+    return new Date(date).toLocaleDateString('fr-FR')
+  }
+  return date.toLocaleDateString('fr-FR')
+}
 
 interface AuditLog {
   id: string

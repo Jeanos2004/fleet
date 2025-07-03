@@ -97,7 +97,7 @@ export function FuelConsumptionChart() {
                     <span className="text-xs text-muted-foreground">
                       Objectif: {vehicle.target} L/100km
                     </span>
-                    <Badge size="sm" variant={getEfficiencyBadge(vehicle.efficiency)}>
+                    <Badge variant={getEfficiencyBadge(vehicle.efficiency)}>
                       {vehicle.efficiency}
                     </Badge>
                   </div>

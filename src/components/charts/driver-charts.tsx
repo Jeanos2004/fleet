@@ -316,13 +316,11 @@ export function DriverSkillsRadialChart({ drivers }: DriverChartsProps) {
             barSize={20}
             data={skillsData}
           >
-            <RadialBar
-              minAngle={15}
-              label={{ position: 'insideStart', fill: '#fff' }}
-              background
-              clockWise
-              dataKey="value"
-            />
+                          <RadialBar
+                label={{ position: 'insideStart', fill: '#fff' }}
+                background
+                dataKey="value"
+              />
             <Legend
               iconSize={10}
               layout="horizontal"

@@ -228,7 +228,7 @@ export function DriverManager() {
             <ViewToggle
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              showGrid={true}
+
             />
             <Button onClick={handleAdd} className="gap-2">
               <Plus className="h-4 w-4" />
@@ -420,8 +420,8 @@ export function DriverManager() {
                 <DriverItem
                   driver={driver}
                   viewMode={viewMode}
-                  onEdit={handleEdit}
-                  onView={handleView}
+                  onEdit={handleEdit as any}
+                  onView={handleView as any}
                 />
               </motion.div>
             ))}

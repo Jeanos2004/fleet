@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { mockData } from '@/lib/db/mock-data'
+import { StatutMission } from '@/types'
 
 // GET - Récupérer un véhicule par ID
 export async function GET(
@@ -7,7 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const id = params.id
     
     const vehicle = mockData.camions.find(v => v.id === id)
     
@@ -21,17 +22,25 @@ export async function GET(
       )
     }
     
-    // Ajouter des informations supplémentaires
-    const vehicleWithDetails = {
+    // Enrichir avec des données supplémentaires
+    const enrichedVehicle = {
       ...vehicle,
-      missions: mockData.missions.filter(m => m.camionId === id),
-      maintenanceHistory: mockData.maintenances?.filter(m => m.vehicleId === id) || [],
-      driver: vehicle.chauffeurId ? mockData.chauffeurs.find(c => c.id === vehicle.chauffeurId) : null
+      capacite: vehicle.capaciteCiterne, // Alias pour compatibilité
+      kilometrage: vehicle.odometre, // Alias pour compatibilité
+      maintenanceHistory: [], // Simulation - pas de données de maintenance dans mock-data
+      driver: vehicle.chauffeurId ? mockData.chauffeurs.find(c => c.id === vehicle.chauffeurId) : null,
+      currentMissions: mockData.missions.filter(m => 
+        m.camionId === id && m.statut === StatutMission.EN_COURS
+      ),
+      totalMissions: mockData.missions.filter(m => m.camionId === id).length,
+      completedMissions: mockData.missions.filter(m => 
+        m.camionId === id && m.statut === StatutMission.TERMINEE
+      ).length
     }
     
     return NextResponse.json({
       success: true,
-      data: vehicleWithDetails,
+      data: enrichedVehicle,
       timestamp: new Date().toISOString()
     })
     
@@ -53,7 +62,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const id = params.id
     const body = await request.json()
     
     const vehicleIndex = mockData.camions.findIndex(v => v.id === id)
@@ -68,17 +77,37 @@ export async function PUT(
       )
     }
     
-    // Mettre à jour le véhicule
-    mockData.camions[vehicleIndex] = {
+    // Vérifier s'il y a des missions actives avant modification
+    const activeMissions = mockData.missions.filter(m => 
+      m.camionId === id && m.statut === StatutMission.EN_COURS
+    )
+    
+    if (activeMissions.length > 0 && body.statut && body.statut !== 'EN_MISSION') {
+      return NextResponse.json(
+        { success: false, error: 'Impossible de modifier: missions actives en cours' },
+        { status: 409 }
+      )
+    }
+    
+    // Mise à jour avec gestion des alias
+    const updatedVehicle = {
       ...mockData.camions[vehicleIndex],
       ...body,
       id, // S'assurer que l'ID ne change pas
-      updatedAt: new Date().toISOString()
+      capaciteCiterne: body.capaciteCiterne || body.capacite || mockData.camions[vehicleIndex].capaciteCiterne,
+      odometre: body.odometre || body.kilometrage || mockData.camions[vehicleIndex].odometre,
+      updatedAt: new Date()
     }
+    
+    // Gérer les alias pour compatibilité
+    updatedVehicle.capacite = updatedVehicle.capaciteCiterne
+    updatedVehicle.kilometrage = updatedVehicle.odometre
+    
+    mockData.camions[vehicleIndex] = updatedVehicle
     
     return NextResponse.json({
       success: true,
-      data: mockData.camions[vehicleIndex],
+      data: updatedVehicle,
       message: 'Véhicule mis à jour avec succès'
     })
     
@@ -100,7 +129,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const id = params.id
     
     const vehicleIndex = mockData.camions.findIndex(v => v.id === id)
     
@@ -114,19 +143,25 @@ export async function DELETE(
       )
     }
     
-    // Vérifier si le véhicule est utilisé dans des missions actives
-    const activeMissions = mockData.missions.filter(
-      m => m.camionId === id && m.statut === 'en_cours'
+    // Vérifier s'il y a des missions actives
+    const activeMissions = mockData.missions.filter(m => 
+      m.camionId === id && m.statut === StatutMission.EN_COURS
     )
     
     if (activeMissions.length > 0) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Impossible de supprimer: le véhicule a des missions actives' 
-        },
-        { status: 400 }
+        { success: false, error: 'Impossible de supprimer: missions actives en cours' },
+        { status: 409 }
       )
+    }
+    
+    // Libérer le chauffeur assigné
+    const vehicle = mockData.camions[vehicleIndex]
+    if (vehicle.chauffeurId) {
+      const driver = mockData.chauffeurs.find(d => d.id === vehicle.chauffeurId)
+      if (driver) {
+        driver.disponible = true
+      }
     }
     
     // Supprimer le véhicule

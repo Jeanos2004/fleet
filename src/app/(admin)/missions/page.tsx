@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import type { ChartMission } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -203,7 +204,7 @@ export default function MissionsPage() {
             <ViewToggle
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              showGrid={true}
+
             />
             <ProtectedComponent resource="missions" action="create">
               <Button onClick={handleAdd} className="gap-2">
@@ -314,9 +315,30 @@ export default function MissionsPage() {
         transition={{ duration: 0.3, delay: 0.2 }}
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
-        <MissionsStatusChart missions={missions} />
-        <MissionsDistanceChart missions={missions} />
-        <MissionsPriorityChart missions={missions} />
+        <MissionsStatusChart missions={missions.map(m => ({
+          ...m,
+          startDate: typeof m.dateDebut === 'string' ? m.dateDebut : m.dateDebut.toISOString(),
+          endDate: m.dateFin ? (typeof m.dateFin === 'string' ? m.dateFin : m.dateFin.toISOString()) : '',
+          status: m.statut === 'planifiee' ? 'planned' : 
+                  m.statut === 'en_cours' ? 'in_progress' : 
+                  m.statut === 'terminee' ? 'completed' : 'cancelled'
+        } as ChartMission))} />
+        <MissionsDistanceChart missions={missions.map(m => ({
+          ...m,
+          startDate: typeof m.dateDebut === 'string' ? m.dateDebut : m.dateDebut.toISOString(),
+          endDate: m.dateFin ? (typeof m.dateFin === 'string' ? m.dateFin : m.dateFin.toISOString()) : '',
+          status: m.statut === 'planifiee' ? 'planned' : 
+                  m.statut === 'en_cours' ? 'in_progress' : 
+                  m.statut === 'terminee' ? 'completed' : 'cancelled'
+        } as ChartMission))} />
+        <MissionsPriorityChart missions={missions.map(m => ({
+          ...m,
+          startDate: typeof m.dateDebut === 'string' ? m.dateDebut : m.dateDebut.toISOString(),
+          endDate: m.dateFin ? (typeof m.dateFin === 'string' ? m.dateFin : m.dateFin.toISOString()) : '',
+          status: m.statut === 'planifiee' ? 'planned' : 
+                  m.statut === 'en_cours' ? 'in_progress' : 
+                  m.statut === 'terminee' ? 'completed' : 'cancelled'
+        } as ChartMission))} />
       </motion.div>
 
       {/* Filtres et recherche */}
@@ -425,9 +447,9 @@ export default function MissionsPage() {
                 <MissionItem
                   mission={mission}
                   viewMode={viewMode}
-                  onEdit={handleEdit}
-                  onView={handleView}
-                  onStart={handleStart}
+                  onEdit={handleEdit as any}
+                  onView={handleView as any}
+                  onStart={handleStart as any}
                 />
               </motion.div>
             ))}

@@ -381,7 +381,7 @@ export default function DashboardPage() {
                       <div className="flex-1">
                         <p className="text-sm font-medium">{alerte.message}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge size="sm" variant={
+                          <Badge variant={
                             alerte.priority === 'high' ? 'destructive' :
                             alerte.priority === 'medium' ? 'secondary' : 'outline'
                           }>

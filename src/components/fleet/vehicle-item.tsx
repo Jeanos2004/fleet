@@ -16,19 +16,10 @@ import {
 } from 'lucide-react'
 import { ViewMode } from '@/components/ui/view-toggle'
 
-interface Vehicle {
-  id: string
-  immatriculation: string
-  modele: string
-  type?: string
-  statut: string
-  capacite?: number
-  kilometrage?: number
-  derniereMaintenance?: string
-  prochaineMaintenance?: string
-  chauffeurId?: string | null
-  annee?: number
-}
+import { UIVehicle } from '@/types'
+
+// Utilisation du type UIVehicle pour la compatibilité
+type Vehicle = UIVehicle
 
 interface VehicleItemProps {
   vehicle: Vehicle

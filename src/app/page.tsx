@@ -45,14 +45,7 @@ const scaleOnHover = {
   whileTap: { scale: 0.95 }
 }
 
-const floatingAnimation = {
-  y: [-10, 10, -10],
-  transition: {
-    duration: 6,
-    repeat: Infinity,
-    ease: "easeInOut"
-  }
-}
+// Animations simplifiées inline pour éviter les conflits de version
 
 // Gradient text component
 const GradientText = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
@@ -181,11 +174,13 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-indigo-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-indigo-950/20" />
           <motion.div 
             className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"
-            animate={floatingAnimation}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity }}
           />
           <motion.div 
             className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"
-            animate={{...floatingAnimation, transition: {...floatingAnimation.transition, delay: 3}}}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
           />
         </div>
 

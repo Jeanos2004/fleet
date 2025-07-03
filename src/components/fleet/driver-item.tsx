@@ -17,20 +17,10 @@ import {
 } from 'lucide-react'
 import { ViewMode } from '@/components/ui/view-toggle'
 
-interface Driver {
-  id: string
-  nom: string
-  prenom: string
-  email?: string
-  telephone?: string
-  permis?: string
-  statut: string
-  dateEmbauche?: string
-  rating?: number
-  experience?: number
-  currentVehicle?: string
-  totalMissions?: number
-}
+import { UIDriver } from '@/types'
+
+// Utilisation du type UIDriver pour la compatibilité
+type Driver = UIDriver
 
 interface DriverItemProps {
   driver: Driver
@@ -178,13 +168,13 @@ export function DriverItem({ driver, viewMode, onEdit, onView, className = '' }:
   }
 
   // Affichage en mode carte ou grille
-  const isCompact = viewMode === 'grid'
+  const isCompact = viewMode === 'card'
   
   return (
     <CardItem 
       className={className} 
       onClick={() => onView?.(driver)}
-      compact={isCompact}
+
     >
       {/* Header de la carte */}
       <div className="flex items-center justify-between mb-4">

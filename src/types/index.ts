@@ -49,11 +49,16 @@ export interface Camion {
   immatriculation: string;
   marque: string;
   modele: string;
+  type?: string; // Ajout pour compatibilité
   annee?: number; // Année de fabrication
   capaciteCiterne: number; // en litres
+  capacite?: number; // Alias pour capaciteCiterne
+  kilometrage?: number; // Alias pour odometre
   odometre: number; // en km
   statut: StatutCamion;
   prochaineMaintenance: Date;
+  derniereMaintenance?: Date; // Ajout pour compatibilité
+  chauffeurId?: string | null; // Ajout pour compatibilité
   disponible: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -70,9 +75,16 @@ export interface Chauffeur {
   id: string;
   nom: string;
   prenom: string;
+  email?: string;
   telephone: string;
   numeroPermis: string;
   dateExpirationPermis: Date;
+  statut?: string;
+  dateEmbauche?: Date;
+  adresse?: string;
+  dateNaissance?: Date;
+  experience?: number;
+  rating?: number;
   disponible: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -231,4 +243,90 @@ export enum StatutFacture {
   EMISE = 'EMISE',
   PAYEE = 'PAYEE',
   EN_RETARD = 'EN_RETARD',
+}
+
+// Types alternatifs pour compatibilité avec les composants UI
+
+export interface ChartMission {
+  id: string
+  title: string
+  vehicleId: string
+  vehiclePlate: string
+  driverId: string
+  driverName: string
+  origin: string
+  destination: string
+  startDate: string
+  endDate: string
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled'
+  distance: number
+  cargo: string
+  priority: 'low' | 'medium' | 'high'
+}
+
+export interface UIDriver {
+  id: string
+  nom: string
+  prenom: string
+  firstName: string // Obligatoire pour compatibilité driver-manager
+  lastName: string // Obligatoire pour compatibilité driver-manager
+  email: string // Obligatoire pour compatibilité driver-manager
+  telephone?: string
+  phone: string // Obligatoire pour compatibilité driver-manager
+  permis?: string
+  licenseNumber: string // Obligatoire pour compatibilité driver-manager
+  licenseExpiry: string // Obligatoire pour compatibilité avec driver-manager
+  statut: string
+  status?: string // Alias pour statut
+  dateEmbauche?: string
+  hireDate: string // Obligatoire pour compatibilité driver-manager
+  rating?: number
+  experience?: number
+  currentVehicle?: string
+  totalMissions?: number
+}
+
+export interface UIVehicle {
+  id: string
+  immatriculation: string
+  modele: string
+  type?: string
+  statut: string
+  capacite?: number
+  kilometrage?: number
+  derniereMaintenance?: string
+  prochaineMaintenance?: string
+  chauffeurId?: string | null
+  annee?: number
+}
+
+// Fonction utilitaire pour convertir les types
+export function convertMissionToChart(mission: Mission): ChartMission {
+  return {
+    id: mission.id,
+    title: `Mission ${mission.id}`,
+    vehicleId: mission.camionId,
+    vehiclePlate: mission.camion?.immatriculation || '',
+    driverId: mission.chauffeurId,
+    driverName: mission.chauffeur ? `${mission.chauffeur.prenom} ${mission.chauffeur.nom}` : '',
+    origin: mission.sites[0]?.site?.nom || '',
+    destination: mission.sites[mission.sites.length - 1]?.site?.nom || '',
+    startDate: mission.dateDebut.toISOString(),
+    endDate: mission.dateFin?.toISOString() || '',
+    status: mission.statut === StatutMission.PLANIFIEE ? 'planned' :
+            mission.statut === StatutMission.EN_COURS ? 'in_progress' :
+            mission.statut === StatutMission.TERMINEE ? 'completed' : 'cancelled',
+    distance: mission.distanceEstimee,
+    cargo: 'Carburant',
+    priority: 'medium'
+  }
+}
+
+// Fonction pour formater les dates
+export function formatDate(date: Date | string | undefined): string {
+  if (!date) return 'N/A'
+  if (typeof date === 'string') {
+    return new Date(date).toLocaleDateString('fr-FR')
+  }
+  return date.toLocaleDateString('fr-FR')
 } 
